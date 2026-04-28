@@ -1,0 +1,15 @@
+/* App.css */
+
+/* Đảm bảo toàn bộ ứng dụng luôn chiếm hết màn hình */
+#root {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Các định dạng font chữ mặc định hoặc màu sắc chủ đạo của App */
+body {
+  margin: 0;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: #f0f2f5; /* Màu nền nhạt cho các trang Login/Register */
+}

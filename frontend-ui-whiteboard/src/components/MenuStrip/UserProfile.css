@@ -1,0 +1,249 @@
+.pro-profile-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+/* 1. NÚT AVATAR TRÊN MENU STRIP */
+.avatar-button-wrapper {
+  cursor: pointer;
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: background-color 0.2s ease, transform 0.1s;
+  margin-left: 10px;
+}
+
+.avatar-button-wrapper:hover { background-color: rgba(0, 0, 0, 0.05); }
+.avatar-button-wrapper.active { background-color: rgba(0, 0, 0, 0.08); }
+
+.avatar-icon { color: #5f6368; opacity: 0.8; }
+
+/* 2. MENU XỔ XUỐNG (DROPDOWN MAIN) */
+.pro-dropdown {
+  position: absolute;
+  top: 110%; 
+  right: 10px; 
+  width: 380px; 
+  border-radius: 28px; 
+  box-shadow: 0 4px 15px rgba(0,0,0,0.1), 0 8px 30px rgba(0,0,0,0.08);
+  padding: 16px; 
+  z-index: 1050;
+  border: none;
+  text-align: center;
+  box-sizing: border-box; 
+  background-color: #f8fafd; /* Nền sáng chuẩn Google */
+}
+
+/* 3. HEADER & NÚT X ĐỎ */
+.dropdown-header {
+  display: flex;
+  justify-content: center; 
+  align-items: center;
+  position: relative;
+  margin-bottom: 16px;
+  padding-top: 8px;
+}
+
+.current-email {
+  font-size: 14px;
+  color: #1f1f1f;
+  font-weight: 500;
+}
+
+.close-btn {
+  position: absolute;
+  right: 0; 
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: #5f6368;
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.close-btn:hover { 
+  background-color: #fce8e6; 
+  color: #ea4335; 
+}
+
+/* 4. MAIN ACCOUNT CARD */
+.account-card {
+  background-color: #ffffff;
+  border-radius: 24px;
+  padding: 20px 10px;
+  margin-bottom: 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  border: 1px solid #f1f3f4;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.avatar-large-wrapper { margin-bottom: 8px; }
+.welcome-text { font-size: 22px; font-weight: 400; margin: 0 0 15px; color: #1f1f1f; }
+
+.manage-btn {
+  background-color: transparent;
+  border: 1px solid #747775;
+  border-radius: 20px; 
+  padding: 8px 24px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #1f1f1f;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.manage-btn:hover { background-color: #f1f3f4; }
+
+/* 5. STATUS CARD (Cảnh báo Sync) */
+.sync-status-card {
+  border-radius: 20px;
+  padding: 16px;
+  margin-bottom: 12px;
+  text-align: left;
+  background-color: #fff1f0; 
+  border: 1px solid #ffa39e;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.sync-header { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+.sync-title { font-size: 15px; font-weight: 600; margin: 0; }
+.sync-desc { font-size: 13px; color: #5f6368; margin: 0; line-height: 1.5; }
+
+/* 6. HÀNG NÚT LOGIN & REGISTER */
+.action-buttons-group {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  box-sizing: border-box;
+}
+
+.auth-buttons-row {
+  display: flex;
+  gap: 10px; 
+  width: 100%;
+}
+
+.btn-pro-login {
+  flex: 1;
+  background-color: #0b57d0; 
+  color: #ffffff;
+  border: none;
+  font-size: 14px;
+  font-weight: 500;
+  height: 44px;
+  border-radius: 24px; 
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: background-color 0.2s;
+}
+.btn-pro-login:hover { background-color: #0842a0; }
+
+.btn-pro-register {
+  flex: 1;
+  background-color: #f1f3f4; 
+  color: #1f1f1f;
+  border: none;
+  font-size: 14px;
+  font-weight: 500;
+  height: 44px;
+  border-radius: 24px; 
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: background-color 0.2s;
+}
+.btn-pro-register:hover { background-color: #e8eaed; }
+
+.btn-pro-secondary {
+  background-color: transparent;
+  color: #1f1f1f;
+  border: 1px solid transparent;
+  font-size: 14px;
+  font-weight: 500;
+  height: 44px;
+  border-radius: 12px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 12px;
+  padding-left: 15px;
+  width: 100%;
+  box-sizing: border-box;
+}
+.btn-pro-secondary:hover { background-color: #f1f3f4; }
+
+/* 7. ĐƯỜNG KẺ & FOOTER */
+.divider-horizontal { height: 1px; background-color: #e0e0e0; margin: 4px 0; }
+
+.dropdown-footer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 20px;
+  padding-bottom: 8px;
+  font-size: 12px;
+  color: #5f6368;
+}
+
+.footer-link {
+  text-decoration: none;
+  color: #5f6368;
+  cursor: pointer;
+  font-weight: 400;
+}
+.footer-link:hover { 
+  text-decoration: underline; 
+  background-color: rgba(0,0,0,0.04); 
+  border-radius: 4px; 
+  padding: 2px 4px; 
+  margin: -2px -4px; 
+}
+
+.dropdown-footer span {
+  margin: 0 16px; 
+  font-size: 14px; 
+  color: #5f6368;
+}
+
+/* ==========================================
+   CSS CHO ẢNH AVATAR THẬT (TỪ API/GOOGLE)
+   ========================================== */
+
+/* Ảnh nhỏ trên Menu */
+.avatar-img-strip {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover; /* Đảm bảo ảnh không bị méo */
+  border: 1px solid #e0e0e0;
+}
+
+/* Ảnh to ở giữa Panel */
+.avatar-large-img {
+  width: 90px;
+  height: 90px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #ffffff;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}

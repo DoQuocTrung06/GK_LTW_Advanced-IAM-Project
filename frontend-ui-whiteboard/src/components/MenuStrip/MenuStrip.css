@@ -1,0 +1,223 @@
+.menu-strip-container {
+  display: flex;
+  align-items: center;
+  background-color: #ffffff;
+  border-bottom: 1px solid #d1d1d1;
+  padding: 6px 12px;
+  user-select: none;
+  position: relative; 
+  z-index: 9999;
+}
+.menu-item {
+  position: relative; /* BẮT BUỘC để bảng dropdown neo đúng vị trí */
+}
+
+/* Thêm mới: CSS cho Logo Web Socket Whiteboard */
+.logo-container {
+  display: flex;
+  align-items: center;
+  margin-right: 16px;
+  margin-left: 4px;
+  color: #0b57d0; /* Màu xanh dương giống Google/Windows */
+}
+
+.app-logo {
+  width: 28px;
+  height: 28px;
+}
+
+.menu-tabs {
+  display: flex;
+  gap: 4px;
+}
+
+.menu-tab {
+  padding: 10px 18px;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: background 0.2s;
+}
+
+.menu-tab:hover, .menu-tab.active {
+  background-color: #f0f0f0;
+}
+
+/* --- BẢNG DROPDOWN --- */
+.dropdown-content {
+  position: absolute;
+  top: calc(100% + 5px);
+  left: 0;
+  background-color: #ffffff;
+  border: 1px solid #000000; 
+  border-radius: 6px;
+  box-shadow: 0 8px 16px rgba(0,0,0,0.15);
+  min-width: 160px; /* Thu hẹp lại vì đã bỏ phím tắt */
+  padding: 6px 0;
+  z-index: 100;
+}
+
+.dropdown-content button {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  padding: 10px 16px; 
+  border: none;
+  background: transparent;
+  font-size: 15px; 
+  color: #333;
+  cursor: pointer;
+  text-align: left;
+}
+
+.dropdown-content button:hover {
+  background-color: #f3f3f3;
+  outline: 1px solid #000000; 
+  outline-offset: -1px;
+}
+
+.menu-icon {
+  width: 18px;
+  height: 18px;
+  margin-right: 12px;
+  color: #000000;
+}
+
+.menu-divider {
+  height: 1px;
+  background-color: #e0e0e0;
+  margin: 6px 0;
+}
+
+.divider-vertical {
+  width: 1px;
+  height: 32px;
+  background-color: #ccc;
+  margin: 0 15px;
+}
+
+.quick-access-bar {
+  display: flex;
+  gap: 8px;
+}
+
+.quick-btn {
+  padding: 10px;
+  border-radius: 6px;
+  background: transparent;
+  border: 1px solid transparent;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.quick-btn:hover:not(:disabled) {
+  background-color: #f0f0f0;
+  border: 1px solid #000;
+}
+
+.quick-btn:disabled {
+  opacity: 0.2;
+  cursor: default;
+}
+
+/* =========================================
+   GIAO DIỆN MODAL CHUẨN WINDOWS 11 PAINT
+   ========================================= */
+.modal-overlay {
+  position: fixed;
+  top: 0; left: 0; width: 100vw; height: 100vh;
+  background: rgba(255, 255, 255, 0.4); /* Nền mờ sáng đặc trưng của Win 11 */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 100000;
+  backdrop-filter: blur(2px);
+}
+
+.modal-box {
+  background: #ffffff;
+  padding: 32px;
+  border-radius: 8px; /* Bo góc mềm mại vừa phải */
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12); /* Đổ bóng nhẹ nhàng */
+  width: 480px;
+  position: relative;
+  animation: modalFadeIn 0.15s ease-out;
+  border: 1px solid #e5e5e5;
+}
+
+@keyframes modalFadeIn {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+/* Nút X ở góc trên bên phải */
+.modal-close {
+  position: absolute;
+  top: 16px;
+  right: 20px;
+  font-size: 16px;
+  color: #666;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 4px;
+}
+.modal-close:hover {
+  background: #e81123;
+  color: white;
+}
+
+.modal-title {
+  margin: 8px 0 16px 0;
+  font-size: 20px; /* Chữ tiêu đề vừa phải */
+  color: #000000;
+  font-weight: 600;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.modal-text {
+  margin: 0 0 28px 0;
+  font-size: 15px;
+  color: #1a1a1a;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* Khu vực nút bấm: Chia đều chiều ngang */
+.modal-buttons {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+/* Các nút bấm có kích thước bằng nhau */
+.modal-btn {
+  flex: 1; /* Chia đều độ rộng 3 nút */
+  padding: 10px 20px;
+  border-radius: 4px;
+  font-size: 15px;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  cursor: pointer;
+  transition: all 0.1s;
+}
+
+/* Nút Lưu: Xanh dương chuẩn Win 11 */
+.btn-primary { 
+  background: #005fb8; 
+  color: white; 
+  border: 1px solid #005fb8;
+}
+.btn-primary:hover { 
+  background: #0053a0; 
+}
+
+/* Nút Không lưu & Hủy: Nền trắng, viền xám */
+.btn-secondary { 
+  background: #ffffff; 
+  color: #000000; 
+  border: 1px solid #d1d1d1; 
+}
+.btn-secondary:hover { 
+  background: #f5f5f5; 
+}

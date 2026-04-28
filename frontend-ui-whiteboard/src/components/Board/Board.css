@@ -1,0 +1,48 @@
+/* Vùng không gian xám xung quanh tờ giấy */
+.board-workspace {
+  width: 100%;
+  height: 100%;
+  background-color: #e5e5e5; /* Màu xám đặc trưng của vùng làm việc */
+  overflow: auto; /* Hiển thị thanh cuộn nếu tờ giấy bự hơn màn hình */
+}
+
+/* Tờ giấy vẽ nằm ở giữa */
+.paper-wrapper {
+  background-color: #ffffff;
+  position: relative;
+  margin: 40px auto; /* Đẩy tờ giấy ra giữa ngang, cách mép trên 40px */
+  box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.1); /* Đổ bóng nhẹ cho tờ giấy nổi lên */
+}
+
+/* --- CÁC NÚT KÉO GIÃN KÍCH THƯỚC GIẤY --- */
+.resize-handle {
+  position: absolute;
+  background-color: #ffffff;
+  border: 1px solid #000000;
+  width: 6px;
+  height: 6px;
+  z-index: 10;
+}
+
+/* Cục vuông ở giữa cạnh Phải */
+.handle-right {
+  top: 50%;
+  right: -4px;
+  transform: translateY(-50%);
+  cursor: ew-resize; /* Trỏ chuột mũi tên trái phải */
+}
+
+/* Cục vuông ở giữa cạnh Dưới */
+.handle-bottom {
+  left: 50%;
+  bottom: -4px;
+  transform: translateX(-50%);
+  cursor: ns-resize; /* Trỏ chuột mũi tên lên xuống */
+}
+
+/* Cục vuông ở Góc Dưới-Phải */
+.handle-corner {
+  right: -4px;
+  bottom: -4px;
+  cursor: nwse-resize; /* Trỏ chuột mũi tên chéo */
+}
