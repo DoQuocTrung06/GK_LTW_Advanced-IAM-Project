@@ -1,36 +1,45 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { MdAutoAwesome, MdArrowBack, MdCheckCircleOutline, MdEmail } from "react-icons/md";
+import { MdAutoAwesome, MdArrowBack, MdEmail } from "react-icons/md";
 import './Auth.css';
+import { toast } from 'react-toastify';
 
 function ForgotPassword() {
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
-  const [isSubmitted, setIsSubmitted] = useState(false); 
   
-  // THÊM: Trạng thái API
+  // Trạng thái loading và lỗi
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
 
   const handleSearch = async (e) => {
     e.preventDefault();
+    if (isLoading) return;
+    
+    // Kiểm tra định dạng email cơ bản
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      setError('Invalid email format.');
+      return;
+    }
+    
     setIsLoading(true);
     setError('');
 
     try {
       const response = await fetch('http://localhost:8000/api/forgot-password', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
-        },
+        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
         body: JSON.stringify({ email })
       });
 
-      const data = await response.json();
+      let data = {};
+      try { data = await response.json(); } catch {}
 
       if (response.ok) {
-        setIsSubmitted(true);
+        toast.success("Reset code sent! Please check your email.");
+        // TRUYỀN NGẦM: Đẩy sang VerifyOtp kèm biến 'flow' để phân luồng
+        navigate('/verify-otp', { state: { email: email, flow: 'FORGOT_PASSWORD' } });
       } else {
         setError(data.message || 'We could not find an account with that email address.');
       }
@@ -41,34 +50,14 @@ function ForgotPassword() {
     }
   };
 
-  // Giao diện 2: Sau khi bấm nút Gửi
-  if (isSubmitted) {
-    return (
-      <div className="auth-container">
-        <div className="auth-card" style={{ textAlign: 'center' }}>
-          <div style={{ color: '#22c55e', marginBottom: '16px' }}>
-            <MdCheckCircleOutline size={64} />
-          </div>
-          <h3 className="auth-title">Check your email</h3>
-          <p className="auth-subtitle" style={{ marginBottom: '32px' }}>
-            We've sent a password reset link to <br/><strong>{email}</strong>. 
-            Please check your inbox.
-          </p>
-          <button className="btn-auth-primary" onClick={() => navigate('/login')}>
-            Return to Sign in
-          </button>
-        </div>
-      </div>
-    );
-  }
-
-  // Giao diện 1: Form nhập email
   return (
     <div className="auth-container">
-      <div className="auth-card" style={{ maxWidth: '460px' }}>
-        <div className="auth-logo"><MdAutoAwesome size={32} /></div>
-        <h3 className="auth-title">Find your account</h3>
-        <p className="auth-subtitle">Enter your email address to search for your account.</p>
+      <div className="auth-card">
+        <div className="auth-logo">
+            <MdAutoAwesome size={32} />
+        </div>
+        <h2 className="auth-title">Forgot Password</h2>
+        <p className="auth-subtitle">Enter your email and we'll send you an OTP to reset your password.</p>
 
         <form onSubmit={handleSearch}>
           {error && <div style={{ color: '#ef4444', fontSize: '13px', marginBottom: '16px', textAlign: 'center' }}>{error}</div>}
@@ -108,4 +97,4 @@ function ForgotPassword() {
   );
 }
 
-export default ForgotPassword;  
+export default ForgotPassword;

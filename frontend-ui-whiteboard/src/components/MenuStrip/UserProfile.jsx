@@ -1,130 +1,107 @@
 import React from 'react';
-import { MdLogin, MdClose, MdAccountCircle, MdAdd, MdLogout, MdSyncProblem, MdPersonAddAlt1 } from "react-icons/md";
+import { MdClose, MdLogout, MdVerifiedUser, MdEmail } from "react-icons/md";
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
+import { toast } from 'react-toastify';
 import './UserProfile.css';
 
-// Thêm prop 'currentUser' để nhận dữ liệu thật từ hệ thống sau khi đăng nhập
+/**
+ * Hàm lấy 2 chữ cái đầu của tên làm Avatar (VD: "Do Quoc Trung" -> "DT")
+ */
+const getInitials = (name) => {
+  if (!name) return "U"; // Mặc định là U (User) nếu không có tên
+  const words = name.trim().split(/\s+/);
+  if (words.length === 1) return words[0].charAt(0).toUpperCase();
+  return (words[0].charAt(0) + words[words.length - 1].charAt(0)).toUpperCase();
+};
+
 function UserProfile({ isOpen, toggleProfile, closeMenu, currentUser }) { 
   const navigate = useNavigate();
-  
-  // Trạng thái đăng nhập giờ phụ thuộc vào việc currentUser có tồn tại không
   const isLoggedIn = !!currentUser; 
 
-  // HÀM ĐĂNG XUẤT
-  const handleLogout = () => {
-    localStorage.removeItem('auth_token'); // Xóa token
-    localStorage.removeItem('user');       // Xóa thông tin user
-    closeMenu();
-    navigate('/login'); // Quay về trang đăng nhập
-    window.location.reload(); // Reload để xóa sạch trạng thái cũ nếu cần
+  const handleLogout = async () => {
+    try {
+      // Đã sửa 'token' thành 'auth_token' cho khớp với hệ thống của bạn
+      const token = localStorage.getItem('auth_token');
+      if (token) {
+        await axios.post('http://localhost:8000/api/logout', {}, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+      }
+    } catch (err) {
+      console.error("Logout error:", err);
+    } finally {
+      // Xóa đúng tên auth_token
+      localStorage.removeItem('auth_token');
+      localStorage.removeItem('user');
+      closeMenu();
+      toast.info("Logged out successfully");
+      navigate('/login');
+    }
   };
 
+  const initials = getInitials(isLoggedIn ? currentUser.name : "");
+
   return (
-    <div className="pro-profile-container ms-3">
-      
-      {/* 1. NÚT AVATAR TRÊN THANH MENU STRIP */}
-      <div 
-        onClick={toggleProfile}
-        className={`avatar-button-wrapper ${isOpen ? 'active' : ''}`}
-        title={isLoggedIn ? currentUser.email : "Not signed in"}
-      >
+    <div className="pro-profile-container">
+      {/* TRIGGER AVATAR GÓC TRÊN */}
+      <div onClick={toggleProfile} className={`pro-avatar-trigger ${isOpen ? 'active' : ''}`}>
         {isLoggedIn && currentUser.avatar ? (
-          // Nếu có ảnh thật từ Google/Backend -> Hiện ảnh
-          <img src={currentUser.avatar} alt="User Avatar" className="avatar-img-strip" />
+          <img src={currentUser.avatar} alt="User Avatar" className="rounded-circle" />
         ) : (
-          // Nếu không -> Hiện Icon mặc định
-          <MdAccountCircle size={42} className="avatar-icon" />
+          <div className="initial-avatar-sm">
+            {isLoggedIn ? initials : "?"}
+          </div>
         )}
       </div>
 
-      {/* 2. MENU XỔ XUỐNG */}
+      {/* MENU DROP DOWN */}
       {isOpen && (
-        <div className="pro-dropdown animate__animated animate__fadeIn">
-          
-          {/* A. HEADER SECTION */}
-          <div className="dropdown-header">
-            <span className="current-email">
-              {isLoggedIn ? currentUser.email : "Not signed in"}
+        <div className="pro-dropdown-card shadow-lg">
+          <div className="pro-card-header">
+            <span className="status-badge-verified">
+              {isLoggedIn ? <><MdVerifiedUser /> Account Verified</> : "Guest Mode"}
             </span>
-            <button className="close-btn" onClick={closeMenu}>
-              <MdClose size={20} />
-            </button>
+            <button className="pro-btn-close" onClick={closeMenu}><MdClose /></button>
           </div>
 
-          {/* B. MAIN ACCOUNT CARD */}
-          <div className="account-card">
-            <div className="avatar-large-wrapper">
+          <div className="pro-card-body text-center">
+            {/* AVATAR LỚN BÊN TRONG */}
+            <div className="avatar-preview-lg-container">
               {isLoggedIn && currentUser.avatar ? (
-                 // Ảnh thật to ở giữa
-                <img src={currentUser.avatar} alt="User Avatar" className="avatar-large-img" />
+                <img src={currentUser.avatar} alt="Profile" className="avatar-preview-lg" />
               ) : (
-                <MdAccountCircle size={90} className="avatar-large-icon text-secondary" />
+                <div className="initial-avatar-lg">
+                  {isLoggedIn ? initials : "?"}
+                </div>
               )}
             </div>
             
-            <h3 className="welcome-text">
-              {/* Lấy tên thật từ Backend */}
-              {isLoggedIn ? `Hi, ${currentUser.name}` : "Welcome, Guest"}
-            </h3>
-            
-            {isLoggedIn && (
-              <button className="manage-btn">
-                Manage your Account
-              </button>
+            <h5 className="pro-user-name">
+              {isLoggedIn ? currentUser.name : "Welcome Guest"}
+            </h5>
+            <p className="pro-user-email">
+              <MdEmail /> {isLoggedIn ? currentUser.email : "Sign in to sync your work"}
+            </p>
+
+            {/* GIAO DIỆN KHI CHƯA ĐĂNG NHẬP */}
+            {!isLoggedIn && (
+              <div className="action-group-horizontal">
+                <button className="pro-btn-signin" onClick={() => { closeMenu(); navigate('/login'); }}>Sign In</button>
+                <button className="pro-btn-signup" onClick={() => { closeMenu(); navigate('/register'); }}>Join Now</button>
+              </div>
             )}
+            {/* Đã xóa 2 nút Manage Account và Workspace Settings */}
           </div>
 
-          {/* C. STATUS CARD */}
-          {!isLoggedIn && (
-            <div className="sync-status-card">
-              <div className="sync-header">
-                <MdSyncProblem size={22} className="text-danger" />
-                <h4 className="sync-title text-danger">Data Not Synced</h4>
-              </div>
-              <p className="sync-desc">
-                Your sketches are currently saved temporarily. Sign in now to securely back them up.
-              </p>
+          {/* CHỈ HIỆN NÚT SIGN OUT NẾU ĐÃ ĐĂNG NHẬP */}
+          {isLoggedIn && (
+            <div className="pro-card-footer">
+              <button className="pro-btn-logout" onClick={handleLogout}>
+                <MdLogout /> Sign Out
+              </button>
             </div>
           )}
-
-          {/* D. ACTION BUTTONS */}
-          <div className="action-buttons-group">
-            {!isLoggedIn ? (
-              <div className="auth-buttons-row">
-                <button 
-                  className="btn-pro-login"
-                  onClick={() => { closeMenu(); navigate('/login'); }}
-                >
-                  <MdLogin size={20} /> Sign in
-                </button>
-                
-                <button 
-                  className="btn-pro-register"
-                  onClick={() => { closeMenu(); navigate('/register'); }}
-                >
-                  <MdPersonAddAlt1 size={18} /> Register
-                </button>
-              </div>
-            ) : (
-              <>
-                <button className="btn-pro-secondary">
-                  <MdAdd size={20}/> Add another account
-                </button>
-                <div className="divider-horizontal"></div>
-                <button className="btn-pro-secondary">
-                  {/* Chức năng đăng xuất sau này sẽ gọi API ở đây */}
-                  <MdLogout size={20}/> Sign out
-                </button>
-              </>
-            )}
-          </div>
-
-          {/* E. FOOTER LINKS */}
-          <div className="dropdown-footer">
-            <a href="#" className="footer-link">Privacy Policy</a>
-            <span>•</span>
-            <a href="#" className="footer-link">Terms of Service</a>
-          </div>
         </div>
       )}
     </div>

@@ -1,6 +1,6 @@
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, Navigate } from 'react-router-dom';
 
-// Import các trang (Pages)
+// Import Pages
 import Whiteboard from './pages/Whiteboard/Whiteboard';
 import Login from './pages/Auth/Login';
 import Register from './pages/Auth/Register';
@@ -9,27 +9,55 @@ import ResetPassword from './pages/Auth/ResetPassword';
 import VerifyOtp from './pages/Auth/VerifyOtp';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+
+/**
+ * Hàng rào GuestRoute (Chỉ dành cho khách chưa đăng nhập)
+ * Nếu đã có auth_token (tức là đã đăng nhập), tự động đá văng về trang chủ (/)
+ */
+const GuestRoute = ({ children }) => {
+  const token = localStorage.getItem('auth_token'); 
+  
+  if (token) {
+    return <Navigate to="/" replace />;
+  }
+  return children;
+};
+
 function App() {
   return (
     <>
       <Routes>
-        {/* 1. Trang chủ: Hiện bảng vẽ Whiteboard */}
+        {/* 1. Trang chủ: Mở cửa tự do. Chức năng sẽ bị khóa bởi MenuStrip nếu chưa đăng nhập */}
         <Route path="/" element={<Whiteboard />} />
         
-        {/*2. Các trang xác thực tài khoản */}
-        <Route path="/login" element={<Login />} />
+        {/* 2. Các trang Auth: Được bọc bởi GuestRoute để chặn người đã đăng nhập */}
+        <Route path="/login" element={
+          <GuestRoute>
+            <Login />
+          </GuestRoute>
+        } />
+        <Route path="/register" element={
+          <GuestRoute>
+            <Register />
+          </GuestRoute>
+        } />
+        <Route path="/forgot-password" element={
+          <GuestRoute>
+            <ForgotPassword />
+          </GuestRoute>
+        } />
+        <Route path="/reset-password" element={
+          <GuestRoute>
+            <ResetPassword />
+          </GuestRoute>
+        } />
+        <Route path="/verify-otp" element={
+          <GuestRoute>
+            <VerifyOtp />
+          </GuestRoute>
+        } />
         
-        <Route path="/register" element={<Register />} />
-        
-        <Route path="/forgot-password" element={<ForgotPassword />} />
-        
-        Trang đặt lại mật khẩu cần có :token để xác thực từ link email *
-        <Route path="/reset-password/:token" element={<ResetPassword />} />
-
-        <Route path="/verify-otp" element={<VerifyOtp />} />
-        
-
-        {/* Bạn có thể thêm trang 404 (Không tìm thấy trang) nếu muốn */}
+        {/* Trang 404: Not Found */}
         <Route path="*" element={
           <div style={{ textAlign: 'center', marginTop: '100px', fontFamily: 'Arial' }}>
             <h1 style={{ fontSize: '72px', color: '#1e293b' }}>404</h1>
@@ -38,6 +66,7 @@ function App() {
           </div>
         } />
       </Routes>
+
       <ToastContainer 
         position="top-right" 
         autoClose={3000} 

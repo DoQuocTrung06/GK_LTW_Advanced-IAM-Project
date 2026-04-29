@@ -1,40 +1,49 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import React, { useState } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { 
   MdAutoAwesome, 
   MdVisibility, 
   MdVisibilityOff, 
   MdLock, 
-  MdCheckCircleOutline 
+  MdCheckCircleOutline
 } from "react-icons/md";
 import './Auth.css';
 
 function ResetPassword() {
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
-  const email = searchParams.get('email');
-  const token = searchParams.get('token');
+  const location = useLocation();
 
-  const [formData, setFormData] = useState({ password: '', confirmPassword: '' });
+  // Lấy email và otp từ state ẩn do trang VerifyOtp truyền sang
+  const email = location.state?.email || '';
+  const otp = location.state?.otp || '';
+
+  const [formData, setFormData] = useState({ 
+    password: '', 
+    confirmPassword: '' 
+  });
+  
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   
-  // Lỗi form nội bộ
-  const [errors, setErrors] = useState({ password: '', confirmPassword: '' });
-  
+  const [errors, setErrors] = useState({});
   const [isSuccess, setIsSuccess] = useState(false);
-  
-  // THÊM: Trạng thái API
   const [isLoading, setIsLoading] = useState(false);
   const [apiError, setApiError] = useState('');
 
+  // Kiểm tra tính hợp lệ của mật khẩu
   const validatePassword = (password) => {
     return /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/.test(password);
   };
+  
+  // BẢO VỆ: Nếu ai đó cố tình vào thẳng link này mà không qua OTP, đá về trang forgot
+  if (!email || !otp) {
+      navigate('/forgot-password');
+      return null;
+  }
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    let newErrors = { password: '', confirmPassword: '' };
+    let newErrors = {};
     setApiError('');
 
     if (!validatePassword(formData.password)) {
@@ -47,7 +56,7 @@ function ResetPassword() {
 
     setErrors(newErrors);
 
-    if (!newErrors.password && !newErrors.confirmPassword) {
+    if (Object.keys(newErrors).length === 0) {
       setIsLoading(true);
       
       try {
@@ -57,12 +66,11 @@ function ResetPassword() {
             'Content-Type': 'application/json',
             'Accept': 'application/json'
           },
-          // Gửi token và email từ URL, cộng với mật khẩu mới
           body: JSON.stringify({
-            token: token,
-            email: email,
+            email: email, // Lấy ngầm
+            otp: otp,     // Lấy ngầm từ VerifyOtp truyền sang
             password: formData.password,
-            password_confirmation: formData.confirmPassword
+            password_confirmation: formData.confirmPassword 
           })
         });
 
@@ -70,8 +78,10 @@ function ResetPassword() {
 
         if (response.ok) {
           setIsSuccess(true);
+          // Tự động nhảy về trang Login sau 3 giây
+          setTimeout(() => navigate('/login', { replace: true }), 3000);
         } else {
-          setApiError(data.message || 'Invalid or expired token. Please try again.');
+          setApiError(data.message || 'Invalid or expired session. Please try again.');
         }
       } catch (err) {
         setApiError('Cannot connect to the server.');
@@ -80,13 +90,6 @@ function ResetPassword() {
       }
     }
   };
-
-  useEffect(() => {
-    if (isSuccess) {
-      const timer = setTimeout(() => navigate('/login', { replace: true }), 3000);
-      return () => clearTimeout(timer);
-    }
-  }, [isSuccess, navigate]);
 
   if (isSuccess) {
     return (
@@ -109,9 +112,9 @@ function ResetPassword() {
   return (
     <div className="auth-container">
       <div className="auth-card">
-        <div className="auth-logo"><MdAutoAwesome size={32} /></div>
-        <h3 className="auth-title">Reset Password</h3>
-        <p className="auth-subtitle">Create a new strong password for your account</p>
+        <div className="auth-logo"><MdAutoAwesome size={32}  /></div>
+        <h3 className="auth-title">Create New Password</h3>
+        <p className="auth-subtitle">Please choose a strong password for your account</p>
 
         <form onSubmit={handleSubmit}>
           {apiError && <div style={{ color: '#ef4444', fontSize: '13px', marginBottom: '16px', textAlign: 'center' }}>{apiError}</div>}
@@ -125,7 +128,10 @@ function ResetPassword() {
                 className="form-control-pro"
                 placeholder="••••••••"
                 value={formData.password}
-                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                onChange={(e) => {
+                  setFormData({ ...formData, password: e.target.value });
+                  setErrors(prev => ({ ...prev, password: '' }));
+                }}
               />
               <button type="button" className="password-toggle-btn" onClick={() => setShowPassword(!showPassword)}>
                 {showPassword ? <MdVisibilityOff size={20} /> : <MdVisibility size={20} />}
@@ -143,7 +149,10 @@ function ResetPassword() {
                 className="form-control-pro"
                 placeholder="••••••••"
                 value={formData.confirmPassword}
-                onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
+                onChange={(e) => {
+                  setFormData({ ...formData, confirmPassword: e.target.value });
+                  setErrors(prev => ({ ...prev, confirmPassword: '' }));
+                }}
               />
               <button type="button" className="password-toggle-btn" onClick={() => setShowConfirmPassword(!showConfirmPassword)}>
                 {showConfirmPassword ? <MdVisibilityOff size={20} /> : <MdVisibility size={20} />}
@@ -152,7 +161,9 @@ function ResetPassword() {
             {errors.confirmPassword && <div style={{ color: '#ef4444', fontSize: '12px', marginTop: '6px' }}>{errors.confirmPassword}</div>}
           </div>
 
-          <button type="submit" className="btn-auth-primary" disabled={isLoading}>
+          <button type="submit" className="btn-auth-primary" 
+            disabled={isLoading || !formData.password || !formData.confirmPassword}
+          >
             {isLoading ? 'Updating...' : 'Update Password'}
           </button>
         </form>

@@ -9,7 +9,11 @@ function Whiteboard() {
   useEffect(() => {
     const savedUser = localStorage.getItem('user');
     if (savedUser) {
-      setCurrentUser(JSON.parse(savedUser));
+      try {
+        setCurrentUser(JSON.parse(savedUser));
+      } catch (e) {
+        console.error("Failed to parse user data");
+      }
     }
   }, []);
 

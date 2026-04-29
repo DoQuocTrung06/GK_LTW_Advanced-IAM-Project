@@ -1,20 +1,28 @@
-import React, { useState } from 'react';
+import React, { useState } from 'react'; 
 import { useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
-import { MdVpnKey, MdEmail, MdAutoAwesome } from "react-icons/md";
-import './Auth.css'; // Sử dụng chung file CSS để đồng bộ giao diện
+import { MdVpnKey, MdAutoAwesome } from "react-icons/md";
+import './Auth.css'; 
 import { toast } from 'react-toastify';
+
 
 function VerifyOtp() {
   const navigate = useNavigate();
   const location = useLocation();
   
-  // Lấy email từ trang Register truyền sang thông qua state của router
+  // Lấy dữ liệu ẩn danh, nếu không có flow thì mặc định là từ lúc đăng ký (REGISTER)
   const email = location.state?.email || ''; 
+  const flow = location.state?.flow || 'REGISTER'; 
 
   const [otp, setOtp] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [apiError, setApiError] = useState('');
+
+  // Nếu truy cập trái phép không có email, đẩy về trang login
+  if (!email) {
+    navigate('/login');
+    return null;
+  }
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -22,49 +30,51 @@ function VerifyOtp() {
     setIsLoading(true);
 
     try {
-      // Gọi API xác nhận mã OTP đã viết ở Backend
       const response = await axios.post('http://localhost:8000/api/verify-otp', {
-        email: email,
+        email: email, 
         otp: otp
       });
 
       if (response.status === 200) {
-        // Nếu xác thực thành công, lưu Token và chuyển về trang Dashboard/Whiteboard
-        toast.success('Verification successful! Redirecting...');
-        setTimeout(() => {
-            navigate('/login');
-        }, 2000); 
+        toast.success('Verification successful!');
+        
+        // ĐIỀU HƯỚNG DỰA VÀO LUỒNG (FLOW)
+        if (flow === 'FORGOT_PASSWORD') {
+            // Chuyển sang trang đặt lại mật khẩu, mang theo OTP ngầm
+            navigate('/reset-password', { state: { email: email, otp: otp } });
+        } else {
+            // Đăng ký thành công thì về thẳng Login
+            setTimeout(() => navigate('/login'), 2000); 
+        }
       }
     } catch (err) {
-      // Hiển thị lỗi nếu mã OTP sai hoặc hết hạn
-      toast.error(err.response?.data?.message || 'The OTP code is incorrect!');
+      setApiError(err.response?.data?.message || 'The OTP code is incorrect!');
     } finally {
       setIsLoading(false);
     }
   };
 
-    // 1. Tạo hàm xử lý gửi lại mã
-    const handleResendOtp = async () => {
-        setIsLoading(true);
-        try {
-            // Gọi lại đúng cái API Register nhưng Backend sẽ hiểu là gửi lại mã
-            await axios.post('http://localhost:8000/api/register', {
-                email: email,
-                // Gửi lại các thông tin cần thiết hoặc tạo riêng 1 API resend-otp
-            });
-            toast.info('A new OTP code has been sent to your inbox!');
-        } catch (err) {
-            toast.error('Unable to resend the code, please try again later.');
-        } finally {
-            setIsLoading(false);
-        }
-    };
-  
+  const handleResendOtp = async () => {
+    setIsLoading(true); 
+    try {
+      // SỬA LỖI LOGIC TẠI ĐÂY: Nếu là luồng quên MK thì phải gọi API forgot-password để lấy OTP mới
+      const endpoint = flow === 'FORGOT_PASSWORD' 
+          ? 'http://localhost:8000/api/forgot-password'
+          : 'http://localhost:8000/api/resend-otp';
 
+      const response = await axios.post(endpoint, { email: email });
+      toast.success(response.data.message || "A new OTP code has been sent!");
+      
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Unable to resend the code, please try again later.");
+    } finally {
+      setIsLoading(false); 
+    }
+  };
+  
   return (
     <div className="auth-container">
       <div className="auth-card">
-        {/* Logo ứng dụng */}
         <div className="auth-logo"><MdAutoAwesome size={32} /></div>
         
         <h3 className="auth-title">Verify Your Account</h3>
@@ -74,7 +84,6 @@ function VerifyOtp() {
         </p>
 
         <form onSubmit={handleSubmit}>
-          {/* Hiển thị thông báo lỗi từ API nếu có */}
           {apiError && (
             <div style={{ color: '#ef4444', fontSize: '13px', marginBottom: '16px', textAlign: 'center' }}>
               {apiError}
@@ -99,25 +108,48 @@ function VerifyOtp() {
           </div>
 
           <button type="submit" className="btn-auth-primary" disabled={isLoading}>
-            {isLoading ? 'Verifying...' : 'Verify Account'}
+            {isLoading ? 'Verifying...' : 'Verify Code'}
           </button>
         </form>
 
-        <div className="auth-footer">
-            <p>Didn't receive the code?</p>
+        <div className="auth-footer text-center mt-4">
+            <p style={{ marginBottom: '8px', color: '#64748b' }}>Didn't receive the code?</p>
+            
             <button 
                 type="button"
-                className="auth-link" 
-                onClick={handleResendOtp} // Gọi hàm gửi lại mã thay vì navigate
-                disabled={isLoading}
-                style={{ background: 'none', border: 'none', cursor: 'pointer', fontWeight: 'bold' }}
+                onClick={handleResendOtp} 
+                disabled={isLoading} 
+                style={{ 
+                  background: 'none', 
+                  border: 'none', 
+                  cursor: isLoading ? 'not-allowed' : 'pointer', 
+                  fontWeight: 'bold',
+                  color: isLoading ? '#94a3b8' : '#4f46e5',
+                  transition: '0.2s'
+                }}
             >
                 {isLoading ? 'Sending...' : 'Resend OTP Code'}
             </button>
+            
             <br />
-            <button onClick={() => navigate('/register')} style={{fontSize: '12px', marginTop: '10px', opacity: 0.7}}>
-                Back to Register
-            </button>      
+            {/* Chỉ hiện nút Back to Register nếu không phải là luồng Forgot Password */}
+            {flow !== 'FORGOT_PASSWORD' && (
+              <button 
+                type="button"
+                onClick={() => navigate('/register')} 
+                style={{
+                  fontSize: '13px', 
+                  marginTop: '16px', 
+                  background: 'none',
+                  border: 'none',
+                  color: '#64748b',
+                  textDecoration: 'underline',
+                  cursor: 'pointer'
+                }}
+              >
+                  Back to Register
+              </button>
+            )}
         </div>
       </div>
     </div>

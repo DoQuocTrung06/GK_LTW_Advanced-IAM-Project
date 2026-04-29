@@ -10,6 +10,7 @@ import {
   MdVisibilityOff 
 } from "react-icons/md";
 import './Auth.css';
+import { toast } from 'react-toastify';
 
 function Register() {
   const navigate = useNavigate();
@@ -57,6 +58,7 @@ function Register() {
 
       // 2. QUAN TRỌNG: Nếu đăng ký thành công (Laravel đã gửi mail OTP ngầm)
       if (response.status === 201 || response.status === 200) {
+        toast.success("Registration successful! Please check your email for the OTP.");
         // Chuyển sang trang nhập OTP và "đèo" theo cái email người dùng vừa nhập
         navigate('/verify-otp', { state: { email: formData.email } });
       }
