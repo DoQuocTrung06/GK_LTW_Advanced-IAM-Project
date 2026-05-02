@@ -6,7 +6,7 @@ import { toast } from 'react-toastify';
 function MenuStrip({ 
   onSave, onUndo, onRedo, canUndo, canRedo, onNew, onZoomIn, 
   onZoomOut, onOpen, onResetZoom, onShare, onCut, 
-  hasUnsavedChanges, canPaste, onCopy, onPaste, currentUser 
+  hasUnsavedChanges, canPaste, onCopy, onPaste, activeUsers = [], currentUser, boardCreatorId  
 }) {
   const [activeMenu, setActiveMenu] = useState(null);
   const menuRef = useRef(null);
@@ -37,25 +37,13 @@ function MenuStrip({
     setActiveMenu(null);
   };
 
-  /**
-   * [QUAN TRỌNG] Hàm bảo vệ chức năng
-   * Nếu người dùng chưa đăng nhập, hàm này sẽ chặn lại, hiện thông báo và mở menu Sign In.
-   */
-  const handleProtectedAction = (featureName, callback) => {
-    if (!currentUser) {
-      // Hiện thông báo lỗi bằng tiếng Anh
-      toast.error(`Please sign in to use ${featureName}!`, {
-        position: "top-center",
-        autoClose: 3000,
-        theme: "colored"
-      });
-      // Tự động mở menu Profile để người dùng thấy nút Sign In/Sign Up
-      setIsProfileOpen(true); 
-      setActiveMenu(null);
+  const handleProtectedAction = (actionName, callback) => {
+    if (!currentUser) { // Nếu không có user -> Chặn ngay
+      toast.warn(`Please sign in to use ${actionName}!`);
+      setIsProfileOpen(true); // Tự bật menu đăng nhập
       return;
     }
-    // Nếu đã đăng nhập, thực hiện chức năng như bình thường
-    if (callback) callback();
+    if (callback) callback(); // Có user thì mới cho chạy tiếp
   };
 
   // Xử lý các hành động từ menu Dropdown
@@ -188,6 +176,7 @@ function MenuStrip({
         <div className="quick-access-bar" style={{ flexGrow: 1, display: 'flex', justifyContent: 'space-between' }}>
           <div style={{ display: 'flex', alignItems: 'center' }}>
             
+            
             {/* Nút Save nhanh */}
             <button onClick={() => handleProtectedAction('Save', onSave)} className="quick-btn" title="Save">
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
@@ -219,6 +208,54 @@ function MenuStrip({
             >
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 7v6h-6"></path><path d="M3 17a9 9 0 0 1 9-9 9 9 0 0 1 6 2.3l3 2.7"></path></svg>
             </button>
+
+            <div className="divider-vertical"></div>
+
+            {/* DANH SÁCH NGƯỜI ONLINE (ĐÃ SỬA LỖI ẨN AVATAR) */}
+            <div className="active-users-list" style={{ display: 'flex', marginRight: '10px' }}>
+              {/* Đã xóa hàm .filter() để không ẩn chính mình nữa */}
+              {activeUsers.map((user, index) => {
+                
+                
+                // 1. ĐỒNG BỘ MÀU 
+                const avatarColors = ['#6366f1', '#ec4899', '#14b8a6', '#f59e0b', '#8b5cf6'];
+                const userColor = avatarColors[user.id % avatarColors.length] || '#4f46e5';
+                
+                // 2. SO SÁNH ADMIN
+                const isAdmin = Number(user.id) === Number(boardCreatorId);
+
+                // 3. THÊM MỚI: Kiểm tra xem avatar này có phải là CỦA CHÍNH MÌNH không
+                const isMe = currentUser && Number(user.id) === Number(currentUser.id);
+
+                return (
+                  <div 
+                    key={user.id} 
+                    className={`online-avatar-wrapper ${isMe ? 'is-me' : ''}`}
+                    title={`${user.name} ${isMe ? "(You)" : ""} ${isAdmin ? "(Admin Board)" : ""}`}
+                    style={{ 
+                      marginLeft: index === 0 ? '0' : '-10px', 
+                      zIndex: isMe ? 10 : (5 - index) // Mình nổi lên trên cùng, người khác đè theo thứ tự
+                    }}
+                  >
+                    <div 
+                      className="online-avatar-circle" 
+                      style={{ background: userColor }}
+                    >
+                      {user?.name ? user.name.charAt(0) : '?'}
+                    </div>
+
+                    {/* VƯƠNG MIỆN DÀNH CHO ADMIN */}
+                    {isAdmin && (
+                      <span className="admin-crown-badge">
+                        <svg viewBox="0 0 24 24" width="10" height="10" fill="white" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                        </svg>
+                      </span>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
           </div>
 
           {/* USER PROFILE & AVATAR */}
@@ -228,6 +265,7 @@ function MenuStrip({
               toggleProfile={toggleProfile} 
               closeMenu={() => setIsProfileOpen(false)} 
               currentUser={currentUser}
+              boardCreatorId={boardCreatorId}
             />
           </div>
         </div>

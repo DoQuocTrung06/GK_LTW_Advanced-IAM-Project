@@ -1,0 +1,126 @@
+/* Nền tối làm mờ phía sau Modal */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(15, 23, 42, 0.6); /* Màu tối sang trọng */
+  backdrop-filter: blur(4px); /* Hiệu ứng mờ nền giống Apple/Google */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+  animation: fadeIn 0.2s ease-out;
+}
+
+/* Khung nội dung Modal */
+.modal-box {
+  background: #ffffff;
+  padding: 24px;
+  border-radius: 12px;
+  width: 100%;
+  max-width: 420px;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+  animation: slideUp 0.3s ease-out;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+/* Ô nhập Email */
+.modal-box form input {
+  flex: 1;
+  padding: 10px 14px;
+  border-radius: 6px;
+  border: 1px solid #cbd5e1;
+  font-size: 14px;
+  transition: all 0.2s;
+  outline: none;
+}
+
+.modal-box form input:focus {
+  border-color: #4f46e5;
+  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.2); /* Viền sáng khi click vào */
+}
+
+/* Nút Invite */
+.modal-box form button {
+  padding: 10px 20px;
+  background-color: #4f46e5;
+  color: #ffffff;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.modal-box form button:hover {
+  background-color: #4338ca;
+}
+
+/* Select Box chọn quyền */
+.modal-box select {
+  padding: 8px 12px;
+  border: 1px solid transparent;
+  background-color: #f8fafc;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #334155;
+  cursor: pointer;
+  outline: none;
+  transition: all 0.2s;
+}
+
+.modal-box select:hover {
+  background-color: #f1f5f9;
+}
+
+.modal-box select:focus {
+  border-color: #cbd5e1;
+}
+
+/* Nút Copy Link và Done */
+.copy-btn, .done-btn {
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.copy-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: transparent;
+  border: 1px solid #cbd5e1;
+  color: #0f172a;
+}
+
+.copy-btn:hover {
+  background: #f8fafc;
+}
+
+.done-btn {
+  background-color: #f1f5f9;
+  border: none;
+  color: #0f172a;
+}
+
+.done-btn:hover {
+  background-color: #e2e8f0;
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(10px) scale(0.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}

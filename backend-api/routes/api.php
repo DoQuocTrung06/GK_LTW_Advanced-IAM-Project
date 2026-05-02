@@ -4,24 +4,46 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\ForgotPasswordController;
+use App\Http\Controllers\Api\BoardController; // Import BoardController mới
+use App\Events\DrawAction;
+use Illuminate\Support\Facades\Broadcast;
 
-// Lấy thông tin user đang đăng nhập
-Route::get('/user', function (Request $request) {
-    return $request->user();
-})->middleware('auth:sanctum');
-
-// Đăng ký (Hàm này sẽ tạo User và GỬI MAIL mã OTP)
+/*
+|--------------------------------------------------------------------------
+| Public Routes (Không cần đăng nhập)
+|--------------------------------------------------------------------------
+*/
 Route::post('/register', [AuthController::class, 'register']);
-
-// Đăng nhập
 Route::post('/login', [AuthController::class, 'login']);
-
-// Xác nhận mã OTP (Hàm này sẽ kiểm tra 6 số người dùng nhập)
 Route::post('/verify-otp', [AuthController::class, 'verifyOtp']);
-
 Route::post('/resend-otp', [AuthController::class, 'resendOtp']);
 
-// Gửi OTP (giới hạn 5 lần / phút)
-Route::post('/forgot-password', [ForgotPasswordController::class, 'sendResetOtp'])
-    ->middleware('throttle:5,1');
+Route::post('/forgot-password', [ForgotPasswordController::class, 'sendResetOtp'])->middleware('throttle:5,1');
 Route::post('/reset-password', [ForgotPasswordController::class, 'resetPassword']);
+
+
+/*
+|--------------------------------------------------------------------------
+| Private Routes (Bắt buộc phải có Token - Sanctum)
+|--------------------------------------------------------------------------
+*/
+Route::middleware('auth:sanctum')->group(function () {
+    
+    // Lấy thông tin user
+    Route::get('/user', function (Request $request) {
+        return $request->user();
+    });
+
+    // API cho tính năng Share & Visibility
+    Route::post('/boards/{boardId}/invite', [BoardController::class, 'invite']);
+    Route::put('/boards/{boardId}/visibility', [BoardController::class, 'updateVisibility']);
+    // Route khởi tạo hoặc lấy thông tin bảng vẽ (dấu ? nghĩa là biến id có thể có hoặc không)
+    Route::get('/boards/init/{id?}', [BoardController::class, 'getOrCreateBoard']);
+
+    // Route nhận dữ liệu nét vẽ và chuyển cho BoardController xử lý
+    Route::post('/boards/{board}/broadcast-draw', [BoardController::class, 'broadcastDraw']);
+
+});
+
+// Cổng xác thực cho WebSocket Reverb
+Broadcast::routes(['middleware' => ['auth:sanctum']]);

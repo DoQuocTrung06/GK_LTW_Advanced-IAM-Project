@@ -221,3 +221,58 @@
 .btn-secondary:hover { 
   background: #f5f5f5; 
 }
+
+
+/* --- CSS CHO DANH SÁCH NGƯỜI DÙNG ONLINE --- */
+.online-avatar-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: default;
+  transition: transform 0.2s;
+}
+
+.online-avatar-wrapper:hover {
+  transform: translateY(-2px);
+  z-index: 50 !important;
+}
+
+.online-avatar-circle {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: bold;
+  text-transform: uppercase;
+  border: 2px solid #ffffff; /* Viền trắng đẹp giống profile */
+  box-shadow: 0 2px 4px rgba(0,0,0,0.15); /* Đổ bóng nhẹ làm nổi bật */
+  text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+}
+
+/* Hiệu ứng nổi bật thêm cho avatar của chính mình (nếu thích) */
+.online-avatar-wrapper.is-me .online-avatar-circle {
+  border: 2px solid #ffffff; 
+  box-shadow: 0 0 0 2px #4f46e5, 0 2px 4px rgba(0,0,0,0.2); /* Viền kép: Trắng + Xanh */
+}
+
+/* Vương miện Admin trên avatar nhỏ */
+.admin-crown-badge {
+  position: absolute;
+  top: -8px;
+  right: -6px;
+  width: 18px;
+  height: 18px;
+  background: #fbbf24;
+  border: 2px solid white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+  z-index: 20;
+}

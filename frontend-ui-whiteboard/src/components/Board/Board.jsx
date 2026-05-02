@@ -18,14 +18,13 @@ const matchColor = (r1, g1, b1, a1, r2, g2, b2, a2, tolerance) => {
   );
 };
 
-function Board({ lines, setLines, tool, color, setColor, brushSize, stageRef, clearRedo, zoomLevel = 1, bgImage }) {
+function Board({ boardId, lines, setLines, tool, color, setColor, brushSize, stageRef, clearRedo, zoomLevel = 1, bgImage }) {
   const isDrawing = useRef(false);  
 
   const [paperSize, setPaperSize] = useState({ width: 800, height: 600 });
   const [activeTextInput, setActiveTextInput] = useState(null);
   
-  // STATE MỚI: Lớp chứa mảng màu đã đổ (Flood Fill)
-  const [floodFillLayer, setFloodFillLayer] = useState(null);
+  
 
   const paperRef = useRef(null);
   const resizing = useRef(null); 
@@ -39,30 +38,23 @@ function Board({ lines, setLines, tool, color, setColor, brushSize, stageRef, cl
       img.onload = () => {
         setImageObj(img);
         setPaperSize({ width: img.width, height: img.height });
-        setFloodFillLayer(null); // Xóa lớp màu cũ khi mở ảnh mới
+        
       };
     } else {
       setImageObj(null);
       setPaperSize({ width: 1100, height: 600 }); 
-      setFloodFillLayer(null); // Xóa lớp màu cũ khi tạo mới
+      
     }
   }, [bgImage]);
 
-  useEffect(() => {
-    // Nếu mảng nét vẽ bị xóa trống (do bấm New hoặc Clear)
-    if (lines.length === 0) {
-      setFloodFillLayer(null); // Xóa sạch lớp đổ màu thùng sơn
-    }
-  }, [lines]);
+  
 
   const rgbToHex = (r, g, b) => {
     return ((r << 16) | (g << 8) | b).toString(16);
   };
 
-  // ==========================================
-  // THUẬT TOÁN ĐỔ MÀU (FLOOD FILL)
-  // ==========================================
-  const performFloodFill = (startX, startY) => {
+  // THÊM THAM SỐ lineId VÀO HÀM
+  const performFloodFill = (startX, startY, overrideColor = null, lineId) => {
     if (!stageRef.current) return;
 
     const stage = stageRef.current;
@@ -73,6 +65,10 @@ function Board({ lines, setLines, tool, color, setColor, brushSize, stageRef, cl
 
     const imageData = ctx.getImageData(0, 0, width, height);
     const data = imageData.data;
+
+    // TẠO MỘT LỚP ẢNH TRONG SUỐT ĐỂ LƯU RIÊNG MÀU FILL
+    const outputImageData = ctx.createImageData(width, height);
+    const outputData = outputImageData.data;
 
     const x = Math.round(startX);
     const y = Math.round(startY);
@@ -85,10 +81,9 @@ function Board({ lines, setLines, tool, color, setColor, brushSize, stageRef, cl
     const startB = data[startPos + 2];
     const startA = data[startPos + 3];
 
-    const fillRGB = hexToRgb(color);
+    const fillRGB = hexToRgb(overrideColor || color);
     if (!fillRGB) return;
 
-    // Nếu click vào vùng đã có cùng màu thì bỏ qua
     if (startR === fillRGB.r && startG === fillRGB.g && startB === fillRGB.b && startA === 255) return;
 
     const pixelStack = [[x, y]];
@@ -102,17 +97,23 @@ function Board({ lines, setLines, tool, color, setColor, brushSize, stageRef, cl
       const cb = data[currentPixelPos + 2];
       const ca = data[currentPixelPos + 3];
 
-      // Tolerance = 30 để độ loang màu mượt hơn
       if (matchColor(cr, cg, cb, ca, startR, startG, startB, startA, 30)) {
+        // Đánh dấu vào ảnh gốc để thuật toán quét tiếp
         data[currentPixelPos] = fillRGB.r;
         data[currentPixelPos + 1] = fillRGB.g;
         data[currentPixelPos + 2] = fillRGB.b;
         data[currentPixelPos + 3] = 255;
 
-        if (nx > 0) pixelStack.push([nx - 1, ny]); // Trái
-        if (nx < width - 1) pixelStack.push([nx + 1, ny]); // Phải
-        if (ny > 0) pixelStack.push([nx, ny - 1]); // Trên
-        if (ny < height - 1) pixelStack.push([nx, ny + 1]); // Dưới
+        // CHỈ GHI MÀU VÀO LỚP ẢNH OUTPUT TRONG SUỐT
+        outputData[currentPixelPos] = fillRGB.r;
+        outputData[currentPixelPos + 1] = fillRGB.g;
+        outputData[currentPixelPos + 2] = fillRGB.b;
+        outputData[currentPixelPos + 3] = 255;
+
+        if (nx > 0) pixelStack.push([nx - 1, ny]);
+        if (nx < width - 1) pixelStack.push([nx + 1, ny]);
+        if (ny > 0) pixelStack.push([nx, ny - 1]);
+        if (ny < height - 1) pixelStack.push([nx, ny + 1]);
       }
     }
 
@@ -120,14 +121,39 @@ function Board({ lines, setLines, tool, color, setColor, brushSize, stageRef, cl
     tempCanvas.width = width;
     tempCanvas.height = height;
     const tempCtx = tempCanvas.getContext('2d');
-    tempCtx.putImageData(imageData, 0, 0);
+    
+    // Chỉ in lớp màu fill ra canvas
+    tempCtx.putImageData(outputImageData, 0, 0);
 
     const newFillImage = new window.Image();
     newFillImage.src = tempCanvas.toDataURL();
     newFillImage.onload = () => {
-      setFloodFillLayer(newFillImage);
+      // TÌM ĐÚNG LỆNH FILL ĐÓ TRONG MẢNG VÀ GẮN ẢNH VÀO
+      setLines(prev => prev.map(line => {
+        if (line.id === lineId) {
+          return { ...line, imageObj: newFillImage };
+        }
+        return line;
+      }));
       if (typeof clearRedo === 'function') clearRedo();
     };
+  };
+
+
+  // HÀM GỬI DỮ LIỆU LÊN SERVER
+  const broadcastData = (actionData) => {
+    const token = localStorage.getItem('auth_token');
+    if (token && boardId !== 'temp') {
+      fetch(`http://localhost:8000/api/boards/${boardId}/broadcast-draw`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ actionData })
+      }).catch(err => console.error("Broadcast error:", err));
+    }
   };
 
   const handleMouseDown = (e) => {
@@ -148,7 +174,25 @@ function Board({ lines, setLines, tool, color, setColor, brushSize, stageRef, cl
 
     // --- 2. LOGIC ĐỔ MÀU (THÙNG SƠN) ---
     if (tool === 'fill') {
-      performFloodFill(actualX, actualY);
+      const fillLineId = Date.now().toString() + Math.random().toString(36).substring(2, 7);
+      const fillAction = {
+        id: fillLineId,
+        tool: 'fill',
+        color: color,
+        startX: actualX,
+        startY: actualY,
+        isLocal: true
+      };
+      
+      // Khai báo sự tồn tại của nét vẽ trước
+      setLines((prev) => [...prev, fillAction]);
+      broadcastData(fillAction);
+      
+      // Delay 50ms để React vẽ xong các nét khác, sau đó mới quét màu
+      setTimeout(() => {
+        performFloodFill(actualX, actualY, color, fillLineId);
+      }, 50);
+      
       isDrawing.current = false;
       return;
     }
@@ -167,29 +211,40 @@ function Board({ lines, setLines, tool, color, setColor, brushSize, stageRef, cl
     }
 
     // --- 4. LOGIC VẼ (LINES & SHAPES) ---
-    if (tool === 'pen' || tool === 'eraser' || tool === 'pencil' || tool === 'highlighter') {
-      setLines([...lines, { tool, color, size: brushSize, points: [actualX, actualY] }]);
-    } 
-    else if (tool === 'line') {
-      setLines([...lines, { tool, color, size: brushSize, points: [actualX, actualY, actualX, actualY] }]);
-    }
-    else {
-      setLines([...lines, { tool, color, size: brushSize, startX: actualX, startY: actualY, width: 0, height: 0 }]);
-    }
+    // Tạo ID siêu ngẫu nhiên để không bao giờ bị trùng khi Socket bắn về
+    const newLineId = Date.now().toString() + Math.random().toString(36).substring(2, 7);
+
+    // Luôn dùng (prev) để đảm bảo không dính nét cũ khi click quá nhanh
+    setLines((prev) => {
+      if (tool === 'pen' || tool === 'eraser' || tool === 'pencil' || tool === 'highlighter') {
+        return [...prev, { id: newLineId, tool, color, size: brushSize, points: [actualX, actualY] }];
+      } 
+      else if (tool === 'line') {
+        return [...prev, { id: newLineId, tool, color, size: brushSize, points: [actualX, actualY, actualX, actualY] }];
+      }
+      else {
+        return [...prev, { id: newLineId, tool, color, size: brushSize, startX: actualX, startY: actualY, width: 0, height: 0 }];
+      }
+    });
     
     if (typeof clearRedo === 'function') clearRedo();
   };
 
   const handleTextBlur = () => {
     if (activeTextInput && activeTextInput.value.trim() !== '') {
-      setLines([...lines, { 
+      const textAction = { 
+        id: Date.now().toString() + Math.random().toString(36).substring(2, 7), // Thêm ID
         tool: 'text', 
         text: activeTextInput.value, 
         color: color, 
         size: brushSize, 
         startX: activeTextInput.startX, 
         startY: activeTextInput.startY 
-      }]);
+      };
+      
+      setLines((prev) => [...prev, textAction]);
+      broadcastData(textAction); 
+      
       if (typeof clearRedo === 'function') clearRedo();
     }
     setActiveTextInput(null); 
@@ -203,24 +258,44 @@ function Board({ lines, setLines, tool, color, setColor, brushSize, stageRef, cl
     const actualX = pos.x / zoomLevel;
     const actualY = pos.y / zoomLevel;
 
-    let lastLine = { ...lines[lines.length - 1] };
-    if (tool === 'pen' || tool === 'eraser' || tool === 'pencil' || tool === 'highlighter') {
-      lastLine.points = lastLine.points.concat([actualX, actualY]);
-    } 
-    else if (tool === 'line') {
-      lastLine.points = [lastLine.points[0], lastLine.points[1], actualX, actualY];
-    }
-    else {
-      lastLine.width = actualX - lastLine.startX;
-      lastLine.height = actualY - lastLine.startY;
-    }
-    const newLines = [...lines];
-    newLines[lines.length - 1] = lastLine;
-    setLines(newLines);
+    // Dùng callback (prev) để luôn lấy được dữ liệu vẽ mới nhất, ko bị bóng ma của React chèn vào
+    setLines((prev) => {
+      if (prev.length === 0) return prev;
+      
+      const newLines = [...prev];
+      let lastLine = { ...newLines[newLines.length - 1] };
+
+      if (tool === 'pen' || tool === 'eraser' || tool === 'pencil' || tool === 'highlighter') {
+        lastLine.points = lastLine.points.concat([actualX, actualY]);
+      } 
+      else if (tool === 'line') {
+        lastLine.points = [lastLine.points[0], lastLine.points[1], actualX, actualY];
+      }
+      else {
+        lastLine.width = actualX - lastLine.startX;
+        lastLine.height = actualY - lastLine.startY;
+      }
+      
+      newLines[newLines.length - 1] = lastLine;
+      return newLines;
+    });
   };
 
   const handleMouseUp = () => {
+    if (!isDrawing.current) return;
     isDrawing.current = false;
+
+    // Mượn prev state để đọc nét vẽ cuối cùng đảm bảo không bị trễ nhịp
+    setLines((prev) => {
+      const lastLine = prev[prev.length - 1];
+      if (lastLine) {
+        const actionWithLocalFlag = { ...lastLine, isLocal: true };
+        broadcastData(actionWithLocalFlag);
+      }
+      return prev; // Trả về y nguyên, không thay đổi state
+    });
+
+    if (clearRedo) clearRedo();
   };
 
   // ==========================================
@@ -328,6 +403,24 @@ function Board({ lines, setLines, tool, color, setColor, brushSize, stageRef, cl
     if (tool === 'select') return 'default'; 
     return 'crosshair'; 
   };
+  
+  // Lắng nghe để tự động vẽ lại màu cho các lệnh Fill (bao gồm cả Redo và Socket)
+  useEffect(() => {
+    // Tìm tất cả các nét fill chưa có imageObj
+    const missingFillLines = lines.filter(
+      (line) => line.tool === 'fill' && !line.imageObj
+    );
+
+    if (missingFillLines.length > 0) {
+      // Chạy qua từng nét để tái tạo lại màu
+      missingFillLines.forEach((line) => {
+        // Delay một chút để đảm bảo Canvas đã render các nét vẽ trước đó
+        setTimeout(() => {
+          performFloodFill(line.startX, line.startY, line.color, line.id);
+        }, 50);
+      });
+    }
+  }, [lines]); // Mỗi khi Undo/Redo làm mảng lines thay đổi, nó sẽ tự kiểm tra
 
   // ==========================================
   // GIAO DIỆN
@@ -351,6 +444,7 @@ function Board({ lines, setLines, tool, color, setColor, brushSize, stageRef, cl
           onMouseDown={handleMouseDown}
           onMouseMove={handleMouseMove}
           onMouseUp={handleMouseUp}
+          onMouseLeave={handleMouseUp}
           ref={stageRef}
           style={{ cursor: getCursorStyle() }}
         >
@@ -362,20 +456,24 @@ function Board({ lines, setLines, tool, color, setColor, brushSize, stageRef, cl
               fill="#ffffff"
             />
 
-            {/* MỚI: Lớp hình ảnh của Thùng Sơn, nằm ngay trên nền trắng và dưới các nét vẽ */}
-            {floodFillLayer && (
-              <KonvaImage 
-                image={floodFillLayer} 
-                x={0} 
-                y={0} 
-                listening={false} // Không cản trở việc click chuột vẽ
-              />
-            )}
-
             {imageObj && <KonvaImage image={imageObj} x={0} y={0} />}
-            {lines.map((shape, i) => (
-              <ShapeRenderer key={i} shape={shape} />
-            ))}
+            
+            {/* RENDER MẢNG DRAWING & FILL */}
+            {lines.map((shape, i) => {
+              // Nếu nó là lệnh Fill, hãy lấy bức ảnh trong suốt ra render
+              if (shape.tool === 'fill') {
+                return shape.imageObj ? (
+                  <KonvaImage 
+                    key={shape.id || i} 
+                    image={shape.imageObj} 
+                    x={0} y={0} 
+                    listening={false} 
+                  />
+                ) : null;
+              }
+              // Các công cụ khác vẽ bình thường
+              return <ShapeRenderer key={shape.id || i} shape={shape} />;
+            })}
           </Layer>
         </Stage>
 

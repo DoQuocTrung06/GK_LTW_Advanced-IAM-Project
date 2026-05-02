@@ -9,19 +9,26 @@ import './UserProfile.css';
  * Hàm lấy 2 chữ cái đầu của tên làm Avatar (VD: "Do Quoc Trung" -> "DT")
  */
 const getInitials = (name) => {
-  if (!name) return "U"; // Mặc định là U (User) nếu không có tên
+  if (!name) return "U"; 
   const words = name.trim().split(/\s+/);
   if (words.length === 1) return words[0].charAt(0).toUpperCase();
   return (words[0].charAt(0) + words[words.length - 1].charAt(0)).toUpperCase();
 };
 
-function UserProfile({ isOpen, toggleProfile, closeMenu, currentUser }) { 
+// ĐỒNG BỘ MẢNG MÀU VỚI CHANNELS.PHP BÊN LARAVEL
+const avatarColors = ['#6366f1', 
+    '#ec4899', 
+    '#14b8a6', 
+    '#f59e0b', 
+    '#8b5cf6'  
+  ];
+
+function UserProfile({ isOpen, toggleProfile, closeMenu, currentUser, boardCreatorId }) { 
   const navigate = useNavigate();
   const isLoggedIn = !!currentUser; 
 
   const handleLogout = async () => {
     try {
-      // Đã sửa 'token' thành 'auth_token' cho khớp với hệ thống của bạn
       const token = localStorage.getItem('auth_token');
       if (token) {
         await axios.post('http://localhost:8000/api/logout', {}, {
@@ -31,7 +38,6 @@ function UserProfile({ isOpen, toggleProfile, closeMenu, currentUser }) {
     } catch (err) {
       console.error("Logout error:", err);
     } finally {
-      // Xóa đúng tên auth_token
       localStorage.removeItem('auth_token');
       localStorage.removeItem('user');
       closeMenu();
@@ -41,6 +47,10 @@ function UserProfile({ isOpen, toggleProfile, closeMenu, currentUser }) {
   };
 
   const initials = getInitials(isLoggedIn ? currentUser.name : "");
+  
+  // TÍNH TOÁN MÀU DỰA TRÊN ID (Giống hệt cách Laravel làm)
+  // Nếu chưa đăng nhập (Guest) thì dùng lại màu Galaxy cũ
+  const myColor = currentUser ? avatarColors[currentUser.id % avatarColors.length] : 'linear-gradient(135deg, #4f46e5 0%, #9333ea 100%)';
 
   return (
     <div className="pro-profile-container">
@@ -49,7 +59,7 @@ function UserProfile({ isOpen, toggleProfile, closeMenu, currentUser }) {
         {isLoggedIn && currentUser.avatar ? (
           <img src={currentUser.avatar} alt="User Avatar" className="rounded-circle" />
         ) : (
-          <div className="initial-avatar-sm">
+          <div className="initial-avatar-sm" style={{ background: myColor }}>
             {isLoggedIn ? initials : "?"}
           </div>
         )}
@@ -60,7 +70,7 @@ function UserProfile({ isOpen, toggleProfile, closeMenu, currentUser }) {
         <div className="pro-dropdown-card shadow-lg">
           <div className="pro-card-header">
             <span className="status-badge-verified">
-              {isLoggedIn ? <><MdVerifiedUser /> Account Verified</> : "Guest Mode"}
+              <MdVerifiedUser /> Account Verified
             </span>
             <button className="pro-btn-close" onClick={closeMenu}><MdClose /></button>
           </div>
@@ -71,37 +81,39 @@ function UserProfile({ isOpen, toggleProfile, closeMenu, currentUser }) {
               {isLoggedIn && currentUser.avatar ? (
                 <img src={currentUser.avatar} alt="Profile" className="avatar-preview-lg" />
               ) : (
-                <div className="initial-avatar-lg">
+                <div className="initial-avatar-lg" style={{ background: myColor }}>
                   {isLoggedIn ? initials : "?"}
                 </div>
               )}
             </div>
             
-            <h5 className="pro-user-name">
-              {isLoggedIn ? currentUser.name : "Welcome Guest"}
+            <h5 className="pro-user-name" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '5px' }}>
+              {currentUser.name}
+              
+              {/* NẾU LÀ ADMIN THÌ HIỆN HUY HIỆU */}
+              {isLoggedIn && Number(currentUser.id) === Number(boardCreatorId) && (
+                <span title="Board Admin" style={{ color: '#fbbf24', display: 'flex' }}>
+                   <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                  </svg>
+                </span>
+              )}
             </h5>
             <p className="pro-user-email">
-              <MdEmail /> {isLoggedIn ? currentUser.email : "Sign in to sync your work"}
+              <MdEmail /> {currentUser.email}   
             </p>
 
-            {/* GIAO DIỆN KHI CHƯA ĐĂNG NHẬP */}
-            {!isLoggedIn && (
-              <div className="action-group-horizontal">
-                <button className="pro-btn-signin" onClick={() => { closeMenu(); navigate('/login'); }}>Sign In</button>
-                <button className="pro-btn-signup" onClick={() => { closeMenu(); navigate('/register'); }}>Join Now</button>
-              </div>
-            )}
-            {/* Đã xóa 2 nút Manage Account và Workspace Settings */}
+            
           </div>
 
-          {/* CHỈ HIỆN NÚT SIGN OUT NẾU ĐÃ ĐĂNG NHẬP */}
-          {isLoggedIn && (
-            <div className="pro-card-footer">
-              <button className="pro-btn-logout" onClick={handleLogout}>
-                <MdLogout /> Sign Out
-              </button>
-            </div>
-          )}
+          
+          
+          <div className="pro-card-footer">
+            <button className="pro-btn-logout" onClick={handleLogout}>
+              <MdLogout /> Sign Out
+            </button>
+          </div>
+         
         </div>
       )}
     </div>

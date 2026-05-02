@@ -24,34 +24,49 @@ function Login() {
         setError(''); // Xóa lỗi cũ trước khi gửi
 
         try {
-        // GỌI API ĐẾN LARAVEL BACKEND (Thay URL bằng link API thật của bạn)
-        const response = await fetch('http://localhost:8000/api/login', {
-            method: 'POST',
-            headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json'
-            },
-            body: JSON.stringify(formData)
-        });
+            // GỌI API ĐẾN LARAVEL BACKEND
+            const response = await fetch('http://localhost:8000/api/login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify(formData)
+            });
 
-        const data = await response.json();
+            const data = await response.json();
 
-        if (response.ok) {
-            // 1. Lưu Token (Sanctum/JWT) vào LocalStorage
-            localStorage.setItem('auth_token', data.token);
-            // 2. Lưu thông tin user (để hiển thị Avatar ở Whiteboard)
-            localStorage.setItem('user', JSON.stringify(data.user));
-            toast.success("Welcome back!");
-            // 3. Chuyển hướng về trang Whiteboard
-            navigate('/');
-        } else {
-            // Backend trả về lỗi (sai pass, email ko tồn tại...)
-            setError(data.message || 'Invalid email or password.');
-        }
+            if (response.ok) {
+                // 1. Lưu Token vào LocalStorage
+                localStorage.setItem('auth_token', data.token);
+                // 2. Lưu thông tin user để hiển thị Avatar
+                localStorage.setItem('user', JSON.stringify(data.user));
+                
+                toast.success("Welcome back!");
+
+                // 3. KIỂM TRA LINK CHỜ VÀ ĐIỀU HƯỚNG
+                // Lấy cái đường dẫn mà App.jsx đã lưu trước khi đá người dùng sang trang Login
+                const returnUrl = localStorage.getItem('redirect_after_login');
+                
+                if (returnUrl) {
+                    // Xóa đường dẫn đó đi để những lần đăng nhập sau không bị dính lại
+                    localStorage.removeItem('redirect_after_login');
+                    // Chuyển người dùng chui tọt vào thẳng cái phòng họ đang muốn vào (VD: /board/14)
+                    navigate(returnUrl); 
+                } else {
+                    // Nếu không có phòng chờ (họ tự bấm nút Login ở trang chủ), thì cho về trang gốc
+                    navigate('/');
+                }
+
+            } else {
+                // Backend trả về lỗi (sai mật khẩu, email không tồn tại...)
+                setError(data.message || 'Invalid email or password.');
+            }
         } catch (err) {
-        setError('Cannot connect to the server. Please try again later.');
+            // Lỗi sập server hoặc mất mạng
+            setError('Cannot connect to the server. Please try again later.');
         } finally {
-        setIsLoading(false);
+            setIsLoading(false);
         }
     };
 
