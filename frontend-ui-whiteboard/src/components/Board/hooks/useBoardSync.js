@@ -33,11 +33,27 @@ export const useBoardSync = (id, lines, setLines, setRedoStack, setBgImage) => {
       }
 
       try {
-        const response = await fetch(`http://localhost:8000/api/boards/init/${currentIdToFetch}`, {
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/boards/init/${currentIdToFetch}`, {
           method: 'GET',
           headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' }
         });
 
+        // Xử lý lỗi 401: Token hết hạn hoặc chưa đăng nhập
+        if (response.status === 401) {
+          toast.warning("Session expired or unauthorized. Please login.");
+          localStorage.removeItem('auth_token');
+          navigate('/login');
+          return;
+        }
+
+        // Xử lý lỗi 403: Không có quyền truy cập bảng (Bảng Private của người khác)
+        if (response.status === 403) {
+          toast.error("Access denied. You don't have permission to view this board.");
+          navigate('/');
+          return;
+        }
+
+        // Dòng code cũ của bạn giữ nguyên
         if (!response.ok) throw new Error(response.status === 404 ? "Board not found" : "Server error");
 
         const data = await response.json();
@@ -145,7 +161,7 @@ export const useBoardSync = (id, lines, setLines, setRedoStack, setBgImage) => {
     if (!boardData?.id || boardData.id === 'temp') return;
     const autoSaveTimer = setTimeout(() => {
       const token = localStorage.getItem('auth_token');
-      fetch(`http://localhost:8000/api/boards/${boardData.id}/save-data`, {
+      fetch(`${import.meta.env.VITE_API_URL}/boards/${boardData.id}/save-data`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

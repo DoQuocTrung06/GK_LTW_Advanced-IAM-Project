@@ -57,7 +57,7 @@ export const useClipboard = ({
     const currentSelectedIds = selectedRef.current || [];
 
     if (currentLines.length === 0) {
-      toast.info("Bảng trống");
+      toast.info("Empty board");
       return;
     }
 
@@ -71,7 +71,7 @@ export const useClipboard = ({
     }
 
     if (items.length === 0) {
-      toast.info("Không có gì để copy");
+      toast.info("There is nothing to copy.");
       return;
     }
 
@@ -84,7 +84,7 @@ export const useClipboard = ({
     setClipboard({ items: cloned, type: 'copy' });
     setCanPaste(true);
 
-    toast.success(currentSelectedIds.length > 0 ? "Đã copy vùng chọn" : "Đã copy toàn bộ");
+    toast.success(currentSelectedIds.length > 0 ? "The selection has been copied" : "All copied");
 
     if (stageRef?.current) {
       try {
@@ -100,7 +100,7 @@ export const useClipboard = ({
     const currentSelectedIds = selectedRef.current || [];
 
     if (currentLines.length === 0) {
-      toast.info("Bảng trống");
+      toast.info("Empty board");
       return;
     }
 
@@ -131,7 +131,7 @@ export const useClipboard = ({
 
     broadcast({ tool: 'delete_multiple', targetIds: idsToCut });
 
-    toast.success(currentSelectedIds.length > 0 ? "Đã cut vùng chọn" : "Đã cut toàn bộ");
+    toast.success(currentSelectedIds.length > 0 ? "The selection has been cut" : "All cut");
   };
 
   const handlePaste = () => {
@@ -140,45 +140,52 @@ export const useClipboard = ({
     const idMap = {};
     const t = Date.now();
 
+    // 1. Tạo ID mới cho toàn bộ các item được dán
     clipboard.items.forEach(i => {
       idMap[String(i.id)] = `p_${t}_${Math.random().toString(36).slice(2, 6)}`;
     });
 
+    // 2. Map lại dữ liệu: Khóa chặt Màu vào Viền mới
     const newItems = clipboard.items.map(i => {
       const oldId = String(i.id);
       const oldRel = i.relatedShapeId ? String(i.relatedShapeId) : null;
 
-      const n = {
+      return {
         ...i,
         id: idMap[oldId],
-        relatedShapeId: oldRel ? idMap[oldRel] : null
+        // Chỉ bám vào viền mới nếu viền đó cũng được copy. Không bám chéo về viền cũ.
+        relatedShapeId: oldRel ? (idMap[oldRel] || null) : null
       };
-
-      if (n.tool === 'fill') {
-        n.imageObj = null;
-      }
-
-      return n;
     });
 
+    // 3. Cập nhật state local ngay lập tức
     setLines(prev => [...prev, ...newItems]);
     setSelectedItemIds(newItems.map(i => i.id));
 
-    // Thay thế vòng lặp broadcast cũ trong handlePaste bằng đoạn này
+    // 4. XỬ LÝ ĐỒNG BỘ MẠNG (KHÔNG DELAY)
+    // Gửi đi đồng loạt cùng một tích tắc để chốt cứng tọa độ trên mọi máy
     newItems.forEach(i => {
-      const itemToBroadcast = { ...i, isLocal: true };
+      const itemToBroadcast = { ...i };
+      
+      // Xóa cờ isLocal để máy bên N hiểu và cho phép copy/cut được
+      delete itemToBroadcast.isLocal; 
+
       if (itemToBroadcast.tool === 'fill') {
-        itemToBroadcast.imageObj = null; // Chỉ xóa khi gửi qua mạng
+        // Chỉ xóa object ảnh (tránh sập mạng do dung lượng lớn), 
+        // tuyệt đối giữ lại mọi thuộc tính tọa độ và dữ liệu base64
+        itemToBroadcast.imageObj = null; 
       }
+
       broadcast(itemToBroadcast);
     });
 
+    // 5. Dọn dẹp nếu là thao tác Cut
     if (clipboard.type === 'cut') {
       setClipboard(null);
       setCanPaste(false);
     }
 
-    toast.success("Đã dán");
+    toast.success("Has been cast");
   };
 
   const broadcast = (actionData) => {

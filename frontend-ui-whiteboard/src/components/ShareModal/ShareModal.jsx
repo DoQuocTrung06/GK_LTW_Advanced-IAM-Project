@@ -27,7 +27,7 @@ function ShareModal({ isOpen, onClose, boardId, currentVisibility }) {
     const token = localStorage.getItem('auth_token'); // Lấy thẻ căn cước
 
     try {
-      const response = await fetch(`http://localhost:8000/api/boards/${boardId}/invite`, {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/boards/${boardId}/invite`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -64,7 +64,7 @@ function ShareModal({ isOpen, onClose, boardId, currentVisibility }) {
     const token = localStorage.getItem('auth_token');
 
     try {
-      const response = await fetch(`http://localhost:8000/api/boards/${boardId}/visibility`, {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/boards/${boardId}/visibility`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

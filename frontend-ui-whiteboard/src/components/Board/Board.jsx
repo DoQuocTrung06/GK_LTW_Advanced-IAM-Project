@@ -169,6 +169,22 @@ function Board({ boardId, lines, setLines, tool, color, setColor, brushSize, sta
     }, 0);
   };
 
+  // HÀM MỚI: Gom cả họ hàng Viền + Màu khi click vào 1 trong 2
+  const handleSelectShape = (id) => {
+    const family = new Set([id]);
+    let changed = true;
+    while(changed) {
+      changed = false;
+      let size = family.size;
+      lines.forEach(l => {
+        if (family.has(l.id) && l.relatedShapeId && !family.has(l.relatedShapeId)) family.add(l.relatedShapeId);
+        if (l.relatedShapeId && family.has(l.relatedShapeId) && !family.has(l.id)) family.add(l.id);
+      });
+      if (family.size > size) changed = true;
+    }
+    if (typeof setSelectedItemIds === 'function') setSelectedItemIds(Array.from(family));
+  };
+
   const handleStageMouseDown = (e) => {
     if (e.target === e.target.getStage()) {
       setSelectedItemIds([]);
@@ -417,8 +433,24 @@ function Board({ boardId, lines, setLines, tool, color, setColor, brushSize, sta
                     key={shape.id || i} 
                     id={shape.id} name="canvas-object" image={shape.imageObj} 
                     x={shape.x || 0} y={shape.y || 0}
+                    scaleX={shape.scaleX || 1}
+                    scaleY={shape.scaleY || 1}
+                    rotation={shape.rotation || 0}
                     draggable={tool === 'select'} 
                     onDragStart={handleGroupDragStart} onDragMove={handleGroupDragMove} onDragEnd={handleGroupDragEnd}
+                    // ✅ FIX 2: Thêm sự kiện Click để trỏ chuột nhấp vào MÀU là tự chộp luôn cả VIỀN
+                    onMouseDown={(e) => {
+                      if (tool === 'select') {
+                        e.cancelBubble = true; // Chặn không cho click xuyên xuống nền
+                        handleSelectShape(shape.id);
+                      }
+                    }}
+                    onTouchStart={(e) => {
+                      if (tool === 'select') {
+                        e.cancelBubble = true;
+                        handleSelectShape(shape.id);
+                      }
+                    }}
                   />
                 ) : null;
               }
