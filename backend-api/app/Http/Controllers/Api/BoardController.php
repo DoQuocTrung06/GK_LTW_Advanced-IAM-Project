@@ -82,4 +82,20 @@ class BoardController extends Controller
 
         return response()->json(['status' => 'success']);
     }
+
+    // Hàm 5: Lưu dữ liệu toàn bộ nét vẽ vào database (Auto-save)
+    public function saveBoardData(Request $request, $boardId)
+    {
+        $request->validate([
+            'board_data' => 'required' // Nhận chuỗi JSON từ React gửi lên
+        ]);
+
+        $board = Board::findOrFail($boardId);
+        $board->board_data = $request->board_data;
+        $board->save();
+
+        return response()->json([
+            'message' => 'Board saved successfully!'
+        ]);
+    }
 }

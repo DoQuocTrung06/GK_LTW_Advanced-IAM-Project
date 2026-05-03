@@ -150,7 +150,16 @@ function MenuStrip({
               <div className="dropdown-content">
                 <button onClick={() => handleAction('cut')}>Cut</button>
                 <button onClick={() => handleAction('copy')}>Copy</button>
-                <button onClick={() => handleAction('paste')} disabled={!canPaste}>Paste</button>
+                <button 
+                  onClick={() => handleAction('paste')} 
+                  disabled={!canPaste}
+                  style={{ 
+                    opacity: canPaste ? 1 : 0.4, 
+                    cursor: canPaste ? 'pointer' : 'not-allowed' 
+                  }}
+                >
+                  Paste
+                </button>
               </div>
             )}
           </div>

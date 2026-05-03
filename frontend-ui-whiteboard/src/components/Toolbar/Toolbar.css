@@ -108,7 +108,8 @@
 /* Lưới Tools */
 .tools-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(2, auto); 
+  grid-auto-flow: column;              
   gap: 6px;
 }
 

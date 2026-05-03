@@ -9,7 +9,11 @@ class Board extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['board_code', 'owner_id', 'visibility'];
+    protected $fillable = ['board_code', 'owner_id', 'visibility', 'board_data']; 
+
+    protected $casts = [
+        'board_data' => 'array',
+    ];
 
     // Mối quan hệ: Một bảng vẽ thuộc về 1 người tạo (User)
     public function owner()

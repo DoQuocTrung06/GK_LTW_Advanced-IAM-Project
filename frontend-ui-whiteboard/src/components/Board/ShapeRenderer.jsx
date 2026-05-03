@@ -1,12 +1,6 @@
 import React from 'react';
-// IMPORT THÊM THẺ Path TỪ REACT-KONVA
 import { Line, Rect, Ellipse, Path, Text } from 'react-konva';
 
-// ==========================================
-// TỪ ĐIỂN HÌNH KHỐI (Dựa trên tỷ lệ ViewBox 24x24 của icon)
-// ==========================================
-// Đổi các thẻ <polygon> thành mã đường dẫn (Path - bắt đầu bằng M, nối bằng L, đóng bằng Z)
-// Các hình phức tạp (Heart, Cloud...) giữ nguyên mã d="..."
 const SHAPE_PATHS = {
   curve: "M4 12 Q 12 2 20 12",
   polygon: "M 12 4 L 4 10 L 7 20 L 17 20 L 20 10 Z",
@@ -22,106 +16,113 @@ const SHAPE_PATHS = {
   lightning: "M 13 2 L 5 13 L 11 13 L 9 22 L 19 10 L 13 10 Z"
 };
 
-function ShapeRenderer({ shape }) {
- // 1. PEN, ERASER, PENCIL, HIGHLIGHTER
-  if (
-    shape.tool === 'pen' ||
-    shape.tool === 'eraser' ||
-    shape.tool === 'pencil' ||
-    shape.tool === 'highlighter'
-  ) {
+function ShapeRenderer({ shape, currentTool, onSelect, onChange, onDragStart, onDragMove, onDragEnd }) {
+  
+  const commonProps = {
+    id: shape.id, 
+    name: 'canvas-object',
+    draggable: currentTool === 'select', 
+    
+    // ĐÃ FIX: Lớp viền tàng hình giúp dễ click trúng hình hơn (tối thiểu 15px)
+    hitStrokeWidth: shape.size ? Math.max(15, shape.size) : 15,
+
+    // ĐÃ FIX: Đổi từ onClick sang onMouseDown để bắt cực nhạy
+    onMouseDown: (e) => { 
+      if (currentTool === 'select') {
+        e.cancelBubble = true; 
+        onSelect(shape.id);
+      }
+    },
+    // ĐÃ FIX: Đổi từ onTap sang onTouchStart cho điện thoại cảm ứng
+    onTouchStart: (e) => { 
+      if (currentTool === 'select') {
+        e.cancelBubble = true;
+        onSelect(shape.id);
+      }
+    },
+    
+    // ✅ Dùng prop từ Board nếu có, fallback về onChange đơn giản
+    onDragStart: onDragStart || undefined,
+    onDragMove: onDragMove || undefined,
+    onDragEnd: onDragEnd || ((e) => {
+      onChange({ ...shape, x: e.target.x(), y: e.target.y() });
+    }),
+
+   
+    
+    onTransformEnd: (e) => {
+      const node = e.target;
+      onChange({
+        ...shape,
+        x: node.x(),
+        y: node.y(),
+        scaleX: node.scaleX(),
+        scaleY: node.scaleY(),
+        rotation: node.rotation(),
+      });
+    },
+
+    x: shape.x || 0,
+    y: shape.y || 0,
+    rotation: shape.rotation || 0,
+    scaleX: shape.scaleX || 1,
+    scaleY: shape.scaleY || 1,
+  };
+
+  if (shape.tool === 'pen' || shape.tool === 'eraser' || shape.tool === 'pencil' || shape.tool === 'highlighter') {
     const isPencil = shape.tool === 'pencil';
     const isHighlighter = shape.tool === 'highlighter';
     const isEraser = shape.tool === 'eraser';
 
     return (
       <Line
+        {...commonProps}
         points={shape.points}
-
-        stroke={
-          isPencil ? '#777' : shape.color
-        }
-
-        strokeWidth={
-          isHighlighter
-            ? shape.size * 2.2
-            : isPencil
-            ? Math.max(1, shape.size * 0.6)
-            : shape.size
-        }
-
-        opacity={
-          isHighlighter
-            ? 0.28
-            : isPencil
-            ? 0.38
-            : 1
-        }
-
-        tension={
-          isPencil ? 0 : 0.5
-        }
-
-        dash={
-          isPencil ? [3, 3] : undefined
-        }
-
+        stroke={isPencil ? '#777' : shape.color}
+        strokeWidth={isHighlighter ? shape.size * 2.2 : isPencil ? Math.max(1, shape.size * 0.6) : shape.size}
+        opacity={isHighlighter ? 0.28 : isPencil ? 0.38 : 1}
+        tension={isPencil ? 0 : 0.5}
+        dash={isPencil ? [3, 3] : undefined}
         lineCap="round"
         lineJoin="round"
-
-        shadowColor={
-          isPencil ? '#999' : undefined
-        }
-
-        shadowBlur={
-          isPencil ? 0.5 : 0
-        }
-
-        globalCompositeOperation={
-          isEraser ? 'destination-out' : 'source-over'
-        }
+        shadowColor={isPencil ? '#999' : undefined}
+        shadowBlur={isPencil ? 0.5 : 0}
+        globalCompositeOperation={isEraser ? 'destination-out' : 'source-over'}
       />
     );
   }
 
-  // 2. Đường thẳng
   if (shape.tool === 'line') {
-    return (
-      <Line
-        points={shape.points}
-        stroke={shape.color}
-        strokeWidth={shape.size}
-        tension={0}
-        lineCap="round"
-      />
-    );
+    return <Line {...commonProps} points={shape.points} stroke={shape.color} strokeWidth={shape.size} tension={0} lineCap="round" />;
   }
 
-  // 3. Hình chữ nhật / Chữ nhật bo góc
   if (shape.tool === 'rect' || shape.tool === 'roundRect') {
     return (
       <Rect
-        x={shape.startX}
-        y={shape.startY}
+        {...commonProps}
+        x={shape.x !== undefined ? shape.x : shape.startX}
+        y={shape.y !== undefined ? shape.y : shape.startY}
         width={shape.width}
         height={shape.height}
         stroke={shape.color}
         strokeWidth={shape.size}
         cornerRadius={shape.tool === 'roundRect' ? 10 : 0}
+        fill="transparent"
       />
     );
   }
 
-  // 4. Hình Elip / Tròn
   if (shape.tool === 'oval') {
     return (
       <Ellipse
-        x={shape.startX + shape.width / 2}
-        y={shape.startY + shape.height / 2}
+        {...commonProps}
+        x={shape.x !== undefined ? shape.x : shape.startX + shape.width / 2}
+        y={shape.y !== undefined ? shape.y : shape.startY + shape.height / 2}
         radiusX={Math.abs(shape.width / 2)}
         radiusY={Math.abs(shape.height / 2)}
         stroke={shape.color}
         strokeWidth={shape.size}
+        fill="transparent"
       />
     );
   }
@@ -129,34 +130,32 @@ function ShapeRenderer({ shape }) {
   if (shape.tool === 'text') {
     return (
       <Text
-        x={shape.startX}
-        y={shape.startY}
+        {...commonProps}
+        x={shape.x !== undefined ? shape.x : shape.startX}
+        y={shape.y !== undefined ? shape.y : shape.startY}
         text={shape.text}
-        fill={shape.color} // Lưu ý: Text dùng fill để tô màu chữ, không dùng stroke
-        fontSize={shape.size * 3} // Nhân lên để cỡ chữ tỷ lệ thuận với thanh brushSize
+        fill={shape.color}
+        fontSize={shape.size * 3}
         fontFamily="Arial"
-        draggable={true}
       />
     );
   }
 
-  // 5. TOÀN BỘ CÁC HÌNH CÒN LẠI (Ngôi sao, Trái tim, Mây, Lục giác...)
   if (SHAPE_PATHS[shape.tool]) {
-    // Vì icon gốc dùng tỷ lệ 24x24, ta sẽ scale chiều rộng/cao tương ứng với kéo chuột.
-    const scaleX = shape.width / 24;
-    const scaleY = shape.height / 24;
-    
+    const baseScaleX = shape.width / 24;
+    const baseScaleY = shape.height / 24;
     return (
       <Path
-        x={shape.startX}
-        y={shape.startY}
+        {...commonProps}
+        x={shape.x !== undefined ? shape.x : shape.startX}
+        y={shape.y !== undefined ? shape.y : shape.startY}
         data={SHAPE_PATHS[shape.tool]}
         stroke={shape.color}
         strokeWidth={shape.size}
-        scaleX={scaleX}
-        scaleY={scaleY}
-        // strokeScaleEnabled={false} giúp nét vẽ KHÔNG BỊ TO RA/MÉO ĐI khi bạn kéo hình quá lớn
+        scaleX={shape.scaleX ? shape.scaleX : baseScaleX}
+        scaleY={shape.scaleY ? shape.scaleY : baseScaleY}
         strokeScaleEnabled={false} 
+        fill="transparent"
       />
     );
   }

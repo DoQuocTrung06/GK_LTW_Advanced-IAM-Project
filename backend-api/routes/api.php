@@ -42,6 +42,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Route nhận dữ liệu nét vẽ và chuyển cho BoardController xử lý
     Route::post('/boards/{board}/broadcast-draw', [BoardController::class, 'broadcastDraw']);
+    Route::put('/boards/{boardId}/save-data', [BoardController::class, 'saveBoardData']);
 
 });
 
