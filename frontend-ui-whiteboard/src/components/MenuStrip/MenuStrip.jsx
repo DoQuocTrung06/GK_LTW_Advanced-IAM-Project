@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import './MenuStrip.css';
 import UserProfile from './UserProfile';
 import { toast } from 'react-toastify';
+import { getUserColor } from '../Board/utils/userColors';
 
 function MenuStrip({ 
   onSave, onUndo, onRedo, canUndo, canRedo, onNew, onZoomIn, 
@@ -227,8 +228,7 @@ function MenuStrip({
                 
                 
                 // 1. ĐỒNG BỘ MÀU 
-                const avatarColors = ['#6366f1', '#ec4899', '#14b8a6', '#f59e0b', '#8b5cf6'];
-                const userColor = avatarColors[user.id % avatarColors.length] || '#4f46e5';
+                const userColor = getUserColor(user.id);
                 
                 // 2. SO SÁNH ADMIN
                 const isAdmin = Number(user.id) === Number(boardCreatorId);

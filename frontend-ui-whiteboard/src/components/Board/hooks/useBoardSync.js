@@ -8,6 +8,7 @@ export const useBoardSync = (id, lines, setLines, setRedoStack, setBgImage) => {
   const [boardData, setBoardData] = useState({ id: 'temp', board_code: 'guest', visibility: 'public' });
   const [currentUser, setCurrentUser] = useState(null);
   const [activeUsers, setActiveUsers] = useState([]);
+  const [cursors, setCursors] = useState({});
   const lastFetchedId = useRef(null);
 
   // 1. Lấy thông tin user
@@ -96,9 +97,23 @@ export const useBoardSync = (id, lines, setLines, setRedoStack, setBgImage) => {
         toast.success(`${user.name} joined the board`, { autoClose: 2000 });
         setActiveUsers((prev) => prev.find(u => u.id === user.id) ? prev : [...prev, user]);
       })
+      // 1. SỬA LẠI ĐOẠN LEAVING: Thêm logic xóa chuột
       .leaving((user) => {
         toast.info(`${user.name} left the board`, { autoClose: 2000 });
         setActiveUsers((prev) => prev.filter(u => u.id !== user.id));
+        
+        setCursors((prev) => {
+          const newCursors = { ...prev };
+          delete newCursors[user.id];
+          return newCursors;
+        });
+      })
+      // 2. THÊM MỚI ĐOẠN NÀY: Lắng nghe tiếng "thì thầm"
+      .listenForWhisper('cursor-move', (e) => {
+        setCursors((prev) => ({
+          ...prev,
+          [e.userId]: { x: e.x, y: e.y, name: e.name }
+        }));
       })
       .listen('.draw.action', (e) => {
         const incomingData = e.actionData; 
@@ -174,5 +189,18 @@ export const useBoardSync = (id, lines, setLines, setRedoStack, setBgImage) => {
     return () => clearTimeout(autoSaveTimer);
   }, [lines, boardData?.id]);
 
-  return { boardData, currentUser, activeUsers };
+  // THÊM HÀM NÀY: Gửi tọa độ của mình cho người khác
+  const broadcastCursor = (x, y) => {
+    if (!currentUser || !boardData || boardData.id === 'temp') return;
+    
+    echo.join(`board.${boardData.id}`).whisper('cursor-move', {
+      userId: currentUser.id,
+      name: currentUser.name,
+      x: x,
+      y: y
+    });
+  };
+
+  // SỬA LẠI DÒNG RETURN: Bổ sung cursors và broadcastCursor
+  return { boardData, currentUser, activeUsers, cursors, broadcastCursor };
 };

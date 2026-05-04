@@ -35,7 +35,7 @@ function Whiteboard() {
   const [isClearModalOpen, setIsClearModalOpen] = useState(false);
 
   // --- KẾT NỐI CÁC LOGIC HOOKS ---
-  const { boardData, currentUser, activeUsers } = useBoardSync(
+  const { boardData, currentUser, activeUsers, cursors, broadcastCursor } = useBoardSync(
     id, lines, setLines, setRedoStack, setBgImage
   );
 
@@ -85,6 +85,7 @@ function Whiteboard() {
           stageRef={stageRef} clearRedo={() => setRedoStack([])} 
           zoomLevel={tools.zoomLevel} bgImage={bgImage} setColor={setColor}
           selectedItemIds={selectedItemIds} setSelectedItemIds={setSelectedItemIds}
+          cursors={cursors} broadcastCursor={broadcastCursor}
         />
       </div>
 

@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { toast } from 'react-toastify';
 import './UserProfile.css';
+import { getUserColor } from '../Board/utils/userColors';
 
 /**
  * Hàm lấy 2 chữ cái đầu của tên làm Avatar (VD: "Do Quoc Trung" -> "DT")
@@ -15,13 +16,6 @@ const getInitials = (name) => {
   return (words[0].charAt(0) + words[words.length - 1].charAt(0)).toUpperCase();
 };
 
-// ĐỒNG BỘ MẢNG MÀU VỚI CHANNELS.PHP BÊN LARAVEL
-const avatarColors = ['#6366f1', 
-    '#ec4899', 
-    '#14b8a6', 
-    '#f59e0b', 
-    '#8b5cf6'  
-  ];
 
 function UserProfile({ isOpen, toggleProfile, closeMenu, currentUser, boardCreatorId }) { 
   const navigate = useNavigate();
@@ -50,7 +44,7 @@ function UserProfile({ isOpen, toggleProfile, closeMenu, currentUser, boardCreat
   
   // TÍNH TOÁN MÀU DỰA TRÊN ID (Giống hệt cách Laravel làm)
   // Nếu chưa đăng nhập (Guest) thì dùng lại màu Galaxy cũ
-  const myColor = currentUser ? avatarColors[currentUser.id % avatarColors.length] : 'linear-gradient(135deg, #4f46e5 0%, #9333ea 100%)';
+  const myColor = currentUser ? getUserColor(currentUser.id) : 'linear-gradient(135deg, #4f46e5 0%, #9333ea 100%)';
 
   return (
     <div className="pro-profile-container">

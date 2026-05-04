@@ -9,10 +9,17 @@ import { rgbToHex } from './utils/colorUtils';
 import { getCursorStyle } from './utils/cursorUtils';
 import { useBoardResize } from './hooks/useBoardResize';
 import { useFloodFill } from './hooks/useFloodFill';
+import LiveCursors from './LiveCursors'
 
-function Board({ boardId, lines, setLines, tool, color, setColor, brushSize, stageRef, clearRedo, zoomLevel = 1, bgImage, selectedItemIds, setSelectedItemIds }) {
+function Board({ 
+    boardId, lines, setLines, tool, color, setColor, brushSize, stageRef, 
+    clearRedo, zoomLevel = 1, bgImage, selectedItemIds, setSelectedItemIds,
+    // 1. THÊM 2 PROPS NÀY VÀO CUỐI:
+    cursors, broadcastCursor 
+  }) {
   const isDrawing = useRef(false);  
   const trRef = useRef(null);
+  const lastCursorTime = useRef(0);
   const dragNodesStart = useRef({});
   const selectedItemIdsRef = useRef(selectedItemIds);
   const linesRef = useRef(lines);
@@ -292,6 +299,15 @@ function Board({ boardId, lines, setLines, tool, color, setColor, brushSize, sta
     const actualX = pos.x / zoomLevel;
     const actualY = pos.y / zoomLevel;
 
+    // Gửi tọa độ cho người khác (mỗi 50 mili-giây gửi 1 lần cho nhẹ máy)
+    const now = Date.now();
+    if (now - lastCursorTime.current > 50) {
+      if (typeof broadcastCursor === 'function') {
+        broadcastCursor(actualX, actualY);
+      }
+      lastCursorTime.current = now;
+    }
+
     if (tool === 'select' && selectionBox && selectionBox.visible) {
       setSelectionBox(prev => ({ ...prev, x2: actualX, y2: actualY }));
       return;
@@ -522,6 +538,7 @@ function Board({ boardId, lines, setLines, tool, color, setColor, brushSize, sta
               boundBoxFunc={(oldBox, newBox) => newBox.width < 5 || newBox.height < 5 ? oldBox : newBox}
             />
           </Layer>
+          <LiveCursors cursors={cursors} />
         </Stage>
 
         {activeTextInput && (
