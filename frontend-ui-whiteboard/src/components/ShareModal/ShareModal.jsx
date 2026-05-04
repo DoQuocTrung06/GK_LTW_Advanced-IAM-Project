@@ -1,16 +1,23 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { MdClose, MdContentCopy, MdPublic, MdLock } from 'react-icons/md';
 import { toast } from 'react-toastify';
 import './ShareModal.css';
 
-function ShareModal({ isOpen, onClose, boardId, currentVisibility }) {
+// 1. THÊM PROP onVisibilityUpdated VÀO ĐÂY
+function ShareModal({ isOpen, onClose, boardId, currentVisibility, onVisibilityUpdated }) {
   const [visibility, setVisibility] = useState(currentVisibility || 'private');
   const [inviteEmail, setInviteEmail] = useState('');
-  const [isLoading, setIsLoading] = useState(false); // Trạng thái loading khi gọi API
+  const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    if (isOpen) {
+      const actualVisibility = currentVisibility || 'private';
+      setVisibility(actualVisibility);
+    }
+  }, [isOpen, currentVisibility]); 
 
   if (!isOpen) return null;
 
-  // Link chia sẻ thực tế
   const shareLink = `${window.location.origin}/board/${boardId}`;
 
   const handleCopyLink = () => {
@@ -18,13 +25,12 @@ function ShareModal({ isOpen, onClose, boardId, currentVisibility }) {
     toast.success("Link copied to clipboard!"); 
   };
 
-  // 1. GỌI API MỜI BẠN BÈ
   const handleInvite = async (e) => {
-    e.preventDefault(); // Ngăn form tải lại trang
+    e.preventDefault();
     if (!inviteEmail) return;
 
     setIsLoading(true);
-    const token = localStorage.getItem('auth_token'); // Lấy thẻ căn cước
+    const token = localStorage.getItem('auth_token');
 
     try {
       const response = await fetch(`${import.meta.env.VITE_API_URL}/boards/${boardId}/invite`, {
@@ -32,7 +38,7 @@ function ShareModal({ isOpen, onClose, boardId, currentVisibility }) {
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
-          'Authorization': `Bearer ${token}` // Gửi token lên Laravel
+          'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify({ email: inviteEmail })
       });
@@ -41,7 +47,7 @@ function ShareModal({ isOpen, onClose, boardId, currentVisibility }) {
 
       if (response.ok) {
         toast.success(`Access granted to ${inviteEmail}!`); 
-        setInviteEmail(''); // Làm sạch ô nhập
+        setInviteEmail('');
       } else {
         toast.error(data.message || "Could not invite this email."); 
       }
@@ -53,12 +59,10 @@ function ShareModal({ isOpen, onClose, boardId, currentVisibility }) {
     }
   };
 
-  // 2. GỌI API CẬP NHẬT QUYỀN PUBLIC/PRIVATE
   const handleVisibilityChange = async (e) => {
     const newVisibility = e.target.value;
     const previousVisibility = visibility;
     
-    // Cập nhật UI ngay lập tức cho mượt mà (Optimistic UI)
     setVisibility(newVisibility);
 
     const token = localStorage.getItem('auth_token');
@@ -78,14 +82,19 @@ function ShareModal({ isOpen, onClose, boardId, currentVisibility }) {
 
       if (response.ok) {
         toast.success(newVisibility === 'public' ? "Changed to Public!" : "Changed to Private!"); 
+        
+        // 2. NẾU THÀNH CÔNG, GỌI HÀM NÀY ĐỂ BÁO CHO THẰNG CHA BIẾT MÀ CẬP NHẬT
+        if (onVisibilityUpdated) {
+          onVisibilityUpdated(newVisibility);
+        }
+
       } else {
-        // Nếu API lỗi, lùi về trạng thái cũ
         setVisibility(previousVisibility);
         toast.error(data.message || "Error updating visibility."); 
       }
     } catch (error) {
       console.error("Visibility update error:", error); 
-      setVisibility(previousVisibility); // Lùi về trạng thái cũ
+      setVisibility(previousVisibility);
       toast.error("Server connection error."); 
     }
   };
@@ -94,16 +103,13 @@ function ShareModal({ isOpen, onClose, boardId, currentVisibility }) {
     <div className="modal-overlay">
       <div className="modal-box">
         
-        {/* Header Modal */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
           <h3 style={{ margin: 0, fontSize: '18px' }}>Share Whiteboard</h3>
-          {/* THÊM type="button" để tránh nảy sinh lỗi submit ẩn */}
           <button type="button" onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer' }}>
             <MdClose size={24} />
           </button>
         </div>
 
-        {/* Ô nhập Email */}
         <form onSubmit={handleInvite} style={{ display: 'flex', gap: '8px', marginBottom: '24px' }}>
           <input 
             type="email" 
@@ -112,13 +118,11 @@ function ShareModal({ isOpen, onClose, boardId, currentVisibility }) {
             onChange={(e) => setInviteEmail(e.target.value)}
             disabled={isLoading}
           />
-          {/* Nút này trong form nên type="submit" là ĐÚNG */}
           <button type="submit" disabled={isLoading} style={{ opacity: isLoading ? 0.7 : 1 }}>
             {isLoading ? 'Sending...' : 'Invite'}
           </button>
         </form>
 
-        {/* Chọn quyền truy cập */}
         <div style={{ marginBottom: '16px' }}>
           <p style={{ margin: '0 0 8px 0', fontWeight: 'bold', fontSize: '14px' }}>General access</p>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
@@ -135,13 +139,10 @@ function ShareModal({ isOpen, onClose, boardId, currentVisibility }) {
 
         <hr style={{ border: 'none', borderTop: '1px solid #e2e8f0', margin: '16px 0' }} />
 
-        {/* Copy Link & Done */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          {/* THÊM type="button" */}
           <button type="button" className="copy-btn" onClick={handleCopyLink}>
             <MdContentCopy size={18} /> Copy link
           </button>
-          {/* THÊM type="button" */}
           <button type="button" className="done-btn" onClick={onClose}>
             Done
           </button>

@@ -9,6 +9,7 @@ import ResetPassword from './pages/Auth/ResetPassword';
 import VerifyOtp from './pages/Auth/VerifyOtp';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import OAuthCallback from './pages/Auth/OAuthCallback';
 
 
 // NGƯỜI BẢO VỆ: Nếu chưa có token, đá về trang login và nhớ cái link định vào
@@ -61,6 +62,9 @@ function App() {
           <Login />
         </GuestRoute>
       } />
+
+      <Route path="/oauth/callback" element={<OAuthCallback />} />
+
       <Route path="/register" element={
         <GuestRoute>
           <Register />

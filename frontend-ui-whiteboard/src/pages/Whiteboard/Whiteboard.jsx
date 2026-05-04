@@ -33,11 +33,18 @@ function Whiteboard() {
   // UI States (Modals)
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const [isClearModalOpen, setIsClearModalOpen] = useState(false);
+  const [boardVisibility, setBoardVisibility] = useState('private'); // thêm
 
   // --- KẾT NỐI CÁC LOGIC HOOKS ---
   const { boardData, currentUser, activeUsers, cursors, broadcastCursor } = useBoardSync(
     id, lines, setLines, setRedoStack, setBgImage
   );
+
+  useEffect(() => {
+    if (boardData && boardData.visibility) {
+      setBoardVisibility(boardData.visibility);
+    }
+  }, [boardData]);
 
   const tools = useBoardTools({
     lines, setLines, redoStack, setRedoStack, bgImage, setBgImage, boardData, stageRef
@@ -90,8 +97,11 @@ function Whiteboard() {
       </div>
 
       <ShareModal 
-        isOpen={isShareModalOpen} onClose={() => setIsShareModalOpen(false)} 
-        boardId={boardData.id} currentVisibility={boardData.visibility || "private"}
+        isOpen={isShareModalOpen} 
+        onClose={() => setIsShareModalOpen(false)} 
+        boardId={boardData?.id || id} 
+        currentVisibility={boardVisibility} 
+        onVisibilityUpdated={(newVis) => setBoardVisibility(newVis)} 
       />
 
       {isClearModalOpen && (

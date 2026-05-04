@@ -39,7 +39,7 @@ export const useBoardSync = (id, lines, setLines, setRedoStack, setBgImage) => {
           headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' }
         });
 
-        // Xử lý lỗi 401: Token hết hạn hoặc chưa đăng nhập
+        // Xử lý lỗi 401
         if (response.status === 401) {
           toast.warning("Session expired or unauthorized. Please login.");
           localStorage.removeItem('auth_token');
@@ -47,14 +47,13 @@ export const useBoardSync = (id, lines, setLines, setRedoStack, setBgImage) => {
           return;
         }
 
-        // Xử lý lỗi 403: Không có quyền truy cập bảng (Bảng Private của người khác)
+        // Xử lý lỗi 403
         if (response.status === 403) {
           toast.error("Access denied. You don't have permission to view this board.");
           navigate('/');
           return;
         }
 
-        // Dòng code cũ của bạn giữ nguyên
         if (!response.ok) throw new Error(response.status === 404 ? "Board not found" : "Server error");
 
         const data = await response.json();
@@ -82,22 +81,21 @@ export const useBoardSync = (id, lines, setLines, setRedoStack, setBgImage) => {
 
   // 3. Kết nối Socket Realtime
   useEffect(() => {
-    if (!currentUser || !boardData || boardData.id === 'temp') return;
-
     const token = localStorage.getItem('auth_token');
-    if (token) {
-      echo.connector.pusher.config.auth = {
-        headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' }
-      };
-    }
+    
+    // Đảm bảo có token và đã khởi tạo xong board thì mới join
+    if (!token || !currentUser || !boardData || boardData.id === 'temp') return;
+    
 
-    echo.join(`board.${boardData.id}`)
+    // Đã xóa đoạn echo.connector.pusher.config.auth... cũ đi vì không cần thiết nữa
+    
+
+    const channel = echo.join(`board.${boardData.id}`)
       .here((users) => setActiveUsers(users))
       .joining((user) => {
         toast.success(`${user.name} joined the board`, { autoClose: 2000 });
         setActiveUsers((prev) => prev.find(u => u.id === user.id) ? prev : [...prev, user]);
       })
-      // 1. SỬA LẠI ĐOẠN LEAVING: Thêm logic xóa chuột
       .leaving((user) => {
         toast.info(`${user.name} left the board`, { autoClose: 2000 });
         setActiveUsers((prev) => prev.filter(u => u.id !== user.id));
@@ -108,7 +106,6 @@ export const useBoardSync = (id, lines, setLines, setRedoStack, setBgImage) => {
           return newCursors;
         });
       })
-      // 2. THÊM MỚI ĐOẠN NÀY: Lắng nghe tiếng "thì thầm"
       .listenForWhisper('cursor-move', (e) => {
         setCursors((prev) => ({
           ...prev,
@@ -176,6 +173,8 @@ export const useBoardSync = (id, lines, setLines, setRedoStack, setBgImage) => {
     if (!boardData?.id || boardData.id === 'temp') return;
     const autoSaveTimer = setTimeout(() => {
       const token = localStorage.getItem('auth_token');
+      if(!token) return; // Kiểm tra thêm token trước khi save
+      
       fetch(`${import.meta.env.VITE_API_URL}/boards/${boardData.id}/save-data`, {
         method: 'PUT',
         headers: {
@@ -201,6 +200,5 @@ export const useBoardSync = (id, lines, setLines, setRedoStack, setBgImage) => {
     });
   };
 
-  // SỬA LẠI DÒNG RETURN: Bổ sung cursors và broadcastCursor
   return { boardData, currentUser, activeUsers, cursors, broadcastCursor };
 };

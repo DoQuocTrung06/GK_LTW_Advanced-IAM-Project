@@ -74,7 +74,8 @@ class BoardController extends Controller
 
             // Nếu Private thì bắt đầu xét duyệt
             if ($board->visibility === 'private') {
-                $user = auth('sanctum')->user();
+                // SỬA sanctum THÀNH api
+                $user = auth('api')->user(); 
 
                 if (!$user) {
                     return response()->json(['message' => 'Please login to access this private board.'], 401);

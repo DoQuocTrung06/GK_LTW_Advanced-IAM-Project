@@ -10,6 +10,10 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Cache; // Quan trọng: Thư viện Cache
+use Tymon\JWTAuth\Facades\JWTAuth; // MỚI: Import JWT
+use Laravel\Socialite\Facades\Socialite; // MỚI: Import Socialite cho Google
+use Illuminate\Support\Facades\Auth;
+
 
 class AuthController extends Controller
 {
@@ -102,7 +106,7 @@ class AuthController extends Controller
         Cache::forget('pending_user_' . $request->email);
 
         // 5. Cấp Token để người dùng đăng nhập ngay lập tức
-        $token = $user->createToken('auth_token')->plainTextToken;
+        $token = JWTAuth::fromUser($user);
 
         return response()->json([
             'message' => 'Account verified successfully!',
@@ -116,44 +120,81 @@ class AuthController extends Controller
      */
     public function login(Request $request)
     {
-        // 1. Kiểm tra dữ liệu đầu vào (Validate input)
         $request->validate([
             'email' => 'required|email',
             'password' => 'required|string',
         ]);
 
-        // 2. Tìm user trong database theo email
-        $user = User::where('email', $request->email)->first();
+        $credentials = $request->only('email', 'password');
 
-        // 3. Kiểm tra user có tồn tại không VÀ mật khẩu có khớp không
-        if (!$user || !Hash::check($request->password, $user->password)) {
-            return response()->json([
-                'message' => 'Invalid email or password.'
-            ], 401); // 401: Unauthorized
+        // SỬA: Dùng Auth::guard('api') thay vì auth('api')
+        if (! $token = Auth::guard('api')->attempt($credentials)) {
+            return response()->json(['message' => 'Invalid email or password.'], 401);
         }
 
-        // 4. Tạo token mới cho phiên đăng nhập
-        $token = $user->createToken('auth_token')->plainTextToken;
-
-        // 5. Trả về token và thông tin user
         return response()->json([
             'message' => 'Login successful.',
             'token' => $token,
-            'user' => $user
+            'user' => Auth::guard('api')->user() // SỬA Ở ĐÂY
         ], 200);
     }
 
     /**
      * Handle user logout
      */
-    public function logout(Request $request)
+    public function logout()
     {
-        // Xóa token hiện tại đang được sử dụng bởi user
-        $request->user()->currentAccessToken()->delete();
+        // SỬA: Dùng Auth::guard('api')
+        Auth::guard('api')->logout();
 
-        return response()->json([
-            'message' => 'Logged out successfully.'
-        ], 200);
+        return response()->json(['message' => 'Logged out successfully.'], 200);
+    }
+
+    // ==========================================
+    // MỚI: 2 Hàm xử lý Google OAuth2.0
+    // ==========================================
+
+    public function redirectToGoogle()
+    {
+        /** @var \Laravel\Socialite\Two\GoogleProvider $driver */
+        $driver = Socialite::driver('google');
+        return $driver->stateless()->redirect();
+    }
+
+    public function handleGoogleCallback()
+    {
+        try {
+            /** @var \Laravel\Socialite\Two\GoogleProvider $driver */
+            $driver = Socialite::driver('google');
+            $googleUser = $driver->stateless()->user();
+
+            // Tìm user xem đã có trong DB chưa, nếu chưa thì tạo mới
+            $user = User::updateOrCreate(
+                ['email' => $googleUser->getEmail()],
+                [
+                    'name' => $googleUser->getName(),
+                    'google_id' => $googleUser->getId(),
+                    'password' => null, // Đăng nhập Google không cần pass
+                    'email_verified_at' => Carbon::now(),
+                ]
+            );
+
+            // BỔ SUNG TỪ ĐÂY TRỞ XUỐNG:
+            // Sinh JWT token cho user vừa đăng nhập
+            $token = JWTAuth::fromUser($user);
+            $userData = base64_encode(json_encode($user));
+
+            // Lấy URL của Frontend từ file .env (mặc định là http://localhost:5173)
+            $frontendUrl = env('FRONTEND_URL', 'http://localhost:5173');
+
+            // Chuyển hướng về Frontend, kẹp theo token lên thanh URL
+            return redirect()->away($frontendUrl . '/oauth/callback?token=' . $token . '&user=' . $userData);
+
+        } catch (\Exception $e) {
+            // Nếu có lỗi, chuyển hướng về trang login kèm thông báo lỗi
+            $frontendUrl = env('FRONTEND_URL', 'http://localhost:5173');
+            return redirect()->away($frontendUrl . '/login?error=Google_Auth_Failed');
+        }
     }
 
 

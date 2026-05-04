@@ -9,6 +9,7 @@ MdVisibilityOff
 } from "react-icons/md";
 import './Auth.css';
 import { toast } from 'react-toastify';
+import { FcGoogle } from "react-icons/fc";
 
 function Login() {
     const navigate = useNavigate();
@@ -17,6 +18,11 @@ function Login() {
 
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState('');
+    // THÊM HÀM NÀY: Xử lý khi bấm nút Google
+    const handleGoogleLogin = () => {
+        // Chuyển hướng trình duyệt sang Laravel Backend
+        window.location.href = 'http://localhost:8000/api/auth/google';
+    };
 
     const handleLogin = async (e) => {
         e.preventDefault();
@@ -129,6 +135,15 @@ function Login() {
                 {isLoading ? 'Signing in...' : 'Sign in'}
             </button>
             </form>
+
+            <div className="auth-divider">
+                <span>Or continue with</span>
+            </div>
+
+            <button type="button" onClick={handleGoogleLogin} className="btn-auth-google">
+                <FcGoogle size={20} />
+                <span>Google</span>
+            </button>
 
             <div className="auth-footer">
             Don't have an account?{' '}

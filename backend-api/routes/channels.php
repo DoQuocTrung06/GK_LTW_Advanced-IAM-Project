@@ -1,13 +1,11 @@
 <?php
-
 use Illuminate\Support\Facades\Broadcast;
 
-// Định nghĩa Presence Channel cho bảng vẽ
-Broadcast::channel('board.{boardId}', function ($user, $boardId) {
-    // Chỉ cần trả về id và name. 
-    // Frontend đã có hàm getUserColor(id) để lo việc hiển thị màu rồi!
+// THÊM ĐOẠN ['guards' => ['api']] VÀO CUỐI NHƯ THẾ NÀY:
+Broadcast::channel('board.{id}', function ($user, $id) {
+    // Logic của bạn, ví dụ trả về thông tin user để hiển thị con trỏ chuột
     return [
         'id' => $user->id,
-        'name' => $user->name,
+        'name' => $user->name
     ];
-});
+}, ['guards' => ['api']]); // <--- CHÌA KHÓA NẰM Ở ĐÂY

@@ -16,11 +16,12 @@ export const useBoardTools = ({
       const headers = {
         'Content-Type': 'application/json',
         'Accept': 'application/json',
-        'Authorization': `Bearer ${token}`
+        'Authorization': `Bearer ${token}` // Token đã được kẹp sẵn rất chuẩn
       };
       if (echo.socketId()) headers['X-Socket-ID'] = echo.socketId();
 
-      fetch(`http://localhost:8000/api/boards/${boardData.id}/broadcast-draw`, {
+      // ĐÃ SỬA: Dùng import.meta.env.VITE_API_URL thay cho http://localhost:8000/api
+      fetch(`${import.meta.env.VITE_API_URL}/boards/${boardData.id}/broadcast-draw`, {
         method: 'POST',
         headers: headers,
         body: JSON.stringify({ actionData })

@@ -15,8 +15,22 @@ return new class extends Migration
             $table->id();
             $table->string('name');
             $table->string('email')->unique();
+            
+            // MỚI: Thêm Google ID cho OAuth2.0
+            $table->string('google_id')->nullable()->unique(); 
+            
+            // MỚI: Thêm cột Role để Phân quyền (RBAC). Mặc định là 'member'
+            $table->string('role')->default('member'); 
+            
             $table->timestamp('email_verified_at')->nullable();
-            $table->string('password');
+            
+            // SỬA: Cho phép password null vì nếu đăng nhập bằng Google thì không cần mật khẩu
+            $table->string('password')->nullable(); 
+            
+            // MỚI: Thêm 2 cột cho Google Authenticator 2FA
+            $table->string('two_factor_secret')->nullable(); 
+            $table->boolean('two_factor_enabled')->default(false);
+
             $table->rememberToken();
             $table->timestamps();
         });
