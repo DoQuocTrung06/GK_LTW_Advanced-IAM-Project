@@ -13,6 +13,11 @@ use Illuminate\Support\Facades\Cache; // Quan trọng: Thư viện Cache
 use Tymon\JWTAuth\Facades\JWTAuth; // MỚI: Import JWT
 use Laravel\Socialite\Facades\Socialite; // MỚI: Import Socialite cho Google
 use Illuminate\Support\Facades\Auth;
+use PragmaRX\Google2FA\Google2FA;
+use BaconQrCode\Renderer\ImageRenderer;
+use BaconQrCode\Renderer\Image\SvgImageBackEnd;
+use BaconQrCode\Renderer\RendererStyle\RendererStyle;
+use BaconQrCode\Writer;
 
 
 class AuthController extends Controller
@@ -127,15 +132,40 @@ class AuthController extends Controller
 
         $credentials = $request->only('email', 'password');
 
-        // SỬA: Dùng Auth::guard('api') thay vì auth('api')
-        if (! $token = Auth::guard('api')->attempt($credentials)) {
+        // 1. Kiểm tra Email và Password
+        if (! Auth::guard('api')->attempt($credentials)) {
             return response()->json(['message' => 'Invalid email or password.'], 401);
         }
 
+        $user = Auth::guard('api')->user();
+
+        // 2. NẾU USER CÓ BẬT 2FA
+        if ($user->two_factor_enabled) {
+            // KHÔNG TRẢ VỀ TOKEN NGAY!
+            // Sinh ra một ID tạm thời (session) để biết ai đang cố gắng đăng nhập
+            $loginSessionId = (string) \Illuminate\Support\Str::uuid();
+            
+            // Lưu ID user vào Cache trong 5 phút kèm theo session ID này
+            Cache::put('2fa_login_' . $loginSessionId, $user->id, Carbon::now()->addMinutes(5));
+
+            // Đăng xuất ngay lập tức (vì chưa xác thực xong 2FA thì chưa được vào)
+            Auth::guard('api')->logout();
+
+            return response()->json([
+                'status' => 'requires_2fa',
+                'message' => '2FA verification required.',
+                'login_session_id' => $loginSessionId // Gửi cái này về Frontend
+            ], 200);
+        }
+
+        // 3. NẾU USER KHÔNG BẬT 2FA (Chạy như cũ)
+        $token = JWTAuth::fromUser($user);
+
         return response()->json([
+            'status' => 'success',
             'message' => 'Login successful.',
             'token' => $token,
-            'user' => Auth::guard('api')->user() // SỬA Ở ĐÂY
+            'user' => $user
         ], 200);
     }
 
@@ -179,19 +209,28 @@ class AuthController extends Controller
                 ]
             );
 
-            // BỔ SUNG TỪ ĐÂY TRỞ XUỐNG:
-            // Sinh JWT token cho user vừa đăng nhập
+            $frontendUrl = env('FRONTEND_URL', 'http://localhost:5173');
+
+            // --- BỔ SUNG KIỂM TRA 2FA Ở ĐÂY ---
+            if ($user->two_factor_enabled) {
+                // Tạo session ID tạm thời
+                $loginSessionId = (string) \Illuminate\Support\Str::uuid();
+                
+                // Lưu ID user vào Cache trong 5 phút
+                Cache::put('2fa_login_' . $loginSessionId, $user->id, Carbon::now()->addMinutes(5));
+
+                // Đá về trang Login kèm theo thông báo bắt nhập 2FA
+                return redirect()->away($frontendUrl . '/login?requires_2fa=true&session_id=' . $loginSessionId);
+            }
+            // ----------------------------------
+
+            // Nếu KHÔNG bật 2FA thì cho vào bình thường
             $token = JWTAuth::fromUser($user);
             $userData = base64_encode(json_encode($user));
 
-            // Lấy URL của Frontend từ file .env (mặc định là http://localhost:5173)
-            $frontendUrl = env('FRONTEND_URL', 'http://localhost:5173');
-
-            // Chuyển hướng về Frontend, kẹp theo token lên thanh URL
             return redirect()->away($frontendUrl . '/oauth/callback?token=' . $token . '&user=' . $userData);
 
         } catch (\Exception $e) {
-            // Nếu có lỗi, chuyển hướng về trang login kèm thông báo lỗi
             $frontendUrl = env('FRONTEND_URL', 'http://localhost:5173');
             return redirect()->away($frontendUrl . '/login?error=Google_Auth_Failed');
         }
@@ -239,5 +278,121 @@ class AuthController extends Controller
         return response()->json([
             'message' => 'A new OTP has been sent to your email.'
         ], 200);
+    }
+
+    /**
+     * Generate 2FA Secret Key and QR Code
+     */
+    public function generate2FA(Request $request)
+    {
+        $user = $request->user();
+        $google2fa = new Google2FA();
+
+        // 1. Kiểm tra nếu user chưa có mã bí mật (Secret Key) thì tạo mới và lưu vào database
+        if (!$user->two_factor_secret) {
+            $user->two_factor_secret = $google2fa->generateSecretKey();
+            $user->save();
+        }
+
+        // 2. Tạo đường link dữ liệu chuẩn theo format của Google Authenticator
+        $qrCodeUrl = $google2fa->getQRCodeUrl(
+            'Magic Whiteboard', // Tên ứng dụng hiển thị trên app điện thoại
+            $user->email,
+            $user->two_factor_secret
+        );
+
+        // 3. Cấu hình vẽ mã QR Code dưới dạng SVG (Kích thước 200x200)
+        $renderer = new ImageRenderer(
+            new RendererStyle(200),
+            new SvgImageBackEnd()
+        );
+        $writer = new Writer($renderer);
+        
+        // 4. Vẽ ra chuỗi hình ảnh SVG
+        $svg = $writer->writeString($qrCodeUrl);
+
+        // 5. Trả về cho Frontend mã Secret (để người dùng có thể nhập tay) và hình QR Code (để quét)
+        return response()->json([
+            'secret' => $user->two_factor_secret,
+            'qr_code_svg' => $svg
+        ], 200);
+    }
+
+    /**
+     * Xác nhận mã 6 số từ app Google Authenticator để chính thức Bật 2FA
+     */
+    public function verifyAndEnable2FA(Request $request)
+    {
+        // 1. Bắt buộc người dùng phải gửi lên mã 'otp' gồm 6 chữ số
+        $request->validate([
+            'otp' => 'required|string|size:6'
+        ]);
+
+        $user = $request->user();
+
+        // 2. Nếu họ chưa từng bấm nút "Setup 2FA" (chưa có mã bí mật) thì báo lỗi
+        if (!$user->two_factor_secret) {
+            return response()->json(['message' => '2FA is not set up yet.'], 400);
+        }
+
+        // 3. Dùng thư viện Google2FA để đối chiếu mã 6 số họ nhập với mã bí mật trong DB
+        $google2fa = new Google2FA();
+        $isValid = $google2fa->verifyKey($user->two_factor_secret, $request->otp);
+
+        if ($isValid) {
+            // 4. Nếu khớp! Tuyệt vời, bật công tắc 2FA cho tài khoản này
+            $user->two_factor_enabled = true;
+            $user->save();
+
+            return response()->json(['message' => '2FA enabled successfully!'], 200);
+        }
+
+        // Nếu nhập sai mã
+        return response()->json(['message' => 'Invalid OTP code. Try again.'], 400);
+    }
+
+    /**
+     * Xác thực mã 6 số lúc Đăng nhập (Dành cho tài khoản có bật 2FA)
+     */
+    public function verify2FALogin(Request $request)
+    {
+        $request->validate([
+            'login_session_id' => 'required|string',
+            'otp' => 'required|string|size:6',
+        ]);
+
+        // 1. Lấy User ID từ Cache dựa vào session_id
+        $userId = Cache::get('2fa_login_' . $request->login_session_id);
+
+        if (!$userId) {
+            return response()->json(['message' => 'Login session expired. Please login again.'], 400);
+        }
+
+        $user = User::find($userId);
+
+        if (!$user || !$user->two_factor_secret) {
+            return response()->json(['message' => 'Invalid user or 2FA not set up.'], 400);
+        }
+
+        // 2. Kiểm tra mã 6 số
+        $google2fa = new Google2FA();
+        $isValid = $google2fa->verifyKey($user->two_factor_secret, $request->otp);
+
+        if ($isValid) {
+            // 3. Khớp mã! Xóa Cache và cấp JWT Token cho phép đăng nhập
+            Cache::forget('2fa_login_' . $request->login_session_id);
+            
+            $token = JWTAuth::fromUser($user);
+
+            return response()->json([
+                'status' => 'success',
+                'message' => '2FA verified. Login successful.',
+                'token' => $token,
+                'user' => $user
+            ], 200);
+        }
+
+        // Nếu mã sai
+        return response()->json(['message' => 'Invalid 2FA code. Please try again.'], 400);
     }
 }

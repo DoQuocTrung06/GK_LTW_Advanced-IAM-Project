@@ -1,0 +1,160 @@
+.pro-2fa-enabled-badge {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    background: #ecfdf5;
+    color: #047857;
+    padding: 10px;
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 600;
+    width: 100%;
+    margin-top: 10px;
+}
+
+.pro-btn-2fa {
+    width: 100%;
+    padding: 10px;
+    background: #f1f5f9;
+    border: 1px solid #e2e8f0;
+    color: #475569;
+    font-weight: 600;
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    cursor: pointer;
+    border-radius: 10px;
+    transition: all 0.2s;
+    margin-top: 10px;
+}
+
+.pro-btn-2fa:hover:not(:disabled) {
+    background: #e2e8f0;
+    color: #1e293b;
+}
+
+.pro-2fa-box {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 15px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 10px;
+    width: 100%;
+    animation: slideDown 0.3s ease;
+}
+
+@keyframes slideDown {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.pro-2fa-instruction {
+    font-size: 12px;
+    color: #64748b;
+    margin: 0 0 10px 0;
+    width: 100%;
+    text-align: left;
+    font-weight: 500;
+}
+
+.qr-svg-wrapper {
+    background: white;
+    padding: 5px;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.qr-svg-wrapper svg {
+    width: 130px !important;
+    height: 130px !important;
+}
+
+.secret-key-box {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    padding: 6px 10px;
+    width: 100%;
+}
+
+.secret-text {
+    font-family: monospace;
+    font-size: 13px;
+    color: #334155;
+    font-weight: 600;
+    letter-spacing: 1px;
+}
+
+.btn-copy-secret {
+    background: none;
+    border: none;
+    color: #64748b;
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 4px;
+    transition: 0.2s;
+}
+
+.btn-copy-secret:hover {
+    background: #e2e8f0;
+    color: #0f172a;
+}
+
+/* Khu vực nhập OTP */
+.otp-input-group {
+    display: flex;
+    width: 100%;
+    gap: 8px;
+}
+
+.otp-input-control {
+    flex: 1;
+    padding: 8px;
+    border-radius: 6px;
+    border: 1px solid #cbd5e1;
+    text-align: center;
+    letter-spacing: 4px;
+    font-family: monospace;
+    font-size: 16px;
+    color: #0f172a;
+    outline: none;
+    transition: 0.2s;
+}
+
+.otp-input-control:focus {
+    border-color: #4f46e5;
+    box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.1);
+}
+
+.otp-btn-verify {
+    padding: 0 16px;
+    background: #059669;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.otp-btn-verify:hover:not(:disabled) {
+    background: #047857;
+}
+
+.otp-btn-verify:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+}

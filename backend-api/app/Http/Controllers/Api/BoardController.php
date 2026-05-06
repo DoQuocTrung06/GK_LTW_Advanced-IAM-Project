@@ -22,21 +22,28 @@ class BoardController extends Controller
             return response()->json(['message' => 'Only the owner can invite people.'], 403);
         }
 
+        // BỔ SUNG: Validate thêm trường role (người dùng gửi lên là viewer hay editor)
         $request->validate([
-            'email' => 'required|email'
+            'email' => 'required|email',
+            'role'  => 'sometimes|in:viewer,editor' 
         ]);
 
         if ($request->email === $request->user()->email) {
             return response()->json(['message' => 'You cannot invite yourself.'], 400);
         }
 
-        $invite = BoardInvite::firstOrCreate([
-            'board_id' => $board->id,
-            'email' => $request->email
-        ]);
+        // SỬ DỤNG updateOrCreate để nếu mời lại người cũ thì nó sẽ cập nhật quyền mới cho họ
+        $invite = BoardInvite::updateOrCreate(
+            ['board_id' => $board->id, 'email' => $request->email],
+            ['role' => $request->role ?? 'viewer'] // Mặc định là viewer nếu frontend không gửi
+        );
 
         // TODO: GỌI HÀM GỬI MAIL Ở ĐÂY (Sẽ làm ở bước sau)
-        Mail::to($request->email)->send(new BoardInvitationMail($board));
+        $roleToSend = $request->role ?? 'viewer';
+
+        // Gửi email, truyền theo cả $board và cái quyền ($roleToSend)
+        Mail::to($request->email)->send(new BoardInvitationMail($board, $roleToSend));
+        
         return response()->json([
             'message' => 'Invited successfully!',
             'invite' => $invite
@@ -71,23 +78,34 @@ class BoardController extends Controller
     {
         if ($id && $id !== 'new') {
             $board = Board::where('id', $id)->orWhere('board_code', $id)->firstOrFail();
+            $user = auth('api')->user();
 
-            // Nếu Private thì bắt đầu xét duyệt
-            if ($board->visibility === 'private') {
-                // SỬA sanctum THÀNH api
-                $user = auth('api')->user(); 
+            $userRole = 'viewer'; // Mặc định ai vào cũng chỉ là viewer
 
-                if (!$user) {
-                    return response()->json(['message' => 'Please login to access this private board.'], 401);
+            // 1. Nếu là chủ phòng
+            if ($user && $user->id === $board->owner_id) {
+                $userRole = 'owner';
+            } else {
+                // 2. Kiểm tra xem người này có nằm trong danh sách khách mời không
+                $invite = null;
+                if ($user) {
+                    $invite = BoardInvite::where('board_id', $board->id)->where('email', $user->email)->first();
                 }
 
-                $isOwner = $user->id === $board->owner_id;
-                $isInvited = BoardInvite::where('board_id', $board->id)->where('email', $user->email)->exists();
-
-                if (!$isOwner && !$isInvited) {
+                if ($invite) {
+                    // Nếu được mời, lấy quyền từ database (viewer hoặc editor)
+                    $userRole = $invite->role ?? 'viewer'; 
+                } elseif ($board->visibility === 'public') {
+                    // Nếu phòng public mà không được mời, cho phép vào xem (chỉ xem, không vẽ)
+                    $userRole = 'viewer'; 
+                } else {
+                    // Phòng private và không được mời -> Đuổi ra
                     return response()->json(['message' => 'You do not have permission to view this board.'], 403);
                 }
             }
+
+            // Gắn cái "thẻ quyền lực" này vào dữ liệu trả về cho Frontend
+            $board->role = $userRole;
 
             return response()->json($board);
         }
@@ -98,6 +116,9 @@ class BoardController extends Controller
             'owner_id' => $request->user()->id,
             'visibility' => 'private'
         ]);
+
+        // Người tạo phòng dĩ nhiên là owner
+        $board->role = 'owner';
 
         return response()->json($board);
     }
@@ -116,15 +137,25 @@ class BoardController extends Controller
         $request->validate(['board_data' => 'required']);
         $board = Board::findOrFail($boardId);
 
-        // BẢO MẬT: Phải có quyền mới được lưu đè nét vẽ
         $user = $request->user();
+
+        // 1. Kiểm tra xem có phải chủ phòng không?
         $isOwner = $user->id === $board->owner_id;
-        $isInvited = BoardInvite::where('board_id', $board->id)->where('email', $user->email)->exists();
+
+        // 2. Tìm trong danh sách khách mời xem người này là ai, quyền gì?
+        // (Sửa exists() thành first() để lấy data ra kiểm tra)
+        $invite = BoardInvite::where('board_id', $board->id)->where('email', $user->email)->first();
         
-        if ($board->visibility === 'private' && !$isOwner && !$isInvited) {
-             return response()->json(['message' => 'Unauthorized to save data.'], 403);
+        // 3. LOGIC PHÂN QUYỀN MỚI NẰM Ở ĐÂY:
+        // Người dùng được phép SỬA (LƯU) khi: BẠN LÀ CHỦ PHÒNG (isOwner) HOẶC BẠN LÀ EDITOR
+        $canEdit = $isOwner || ($invite && $invite->role === 'editor');
+        
+        // Nếu không có quyền Edit (tức là khách lạ, hoặc chỉ là viewer) thì chặn lại
+        if (!$canEdit) {
+             return response()->json(['message' => 'Unauthorized to save data. You are just a viewer.'], 403);
         }
 
+        // Nếu vượt qua được trạm kiểm soát trên thì cho phép lưu data
         $board->board_data = $request->board_data;
         $board->save();
 

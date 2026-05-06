@@ -15,7 +15,7 @@ function Board({
     boardId, lines, setLines, tool, color, setColor, brushSize, stageRef, 
     clearRedo, zoomLevel = 1, bgImage, selectedItemIds, setSelectedItemIds,
     // 1. THÊM 2 PROPS NÀY VÀO CUỐI:
-    cursors, broadcastCursor 
+    cursors, broadcastCursor, canDraw
   }) {
   const isDrawing = useRef(false);  
   const trRef = useRef(null);
@@ -199,6 +199,7 @@ function Board({
   };
 
   const handleMouseDown = (e) => {
+    if (!canDraw) return;
     const stage = e.target.getStage();
     const pos = stage.getPointerPosition();
     if (!pos) return;
@@ -307,6 +308,7 @@ function Board({
       }
       lastCursorTime.current = now;
     }
+    if (!canDraw) return;
 
     if (tool === 'select' && selectionBox && selectionBox.visible) {
       setSelectionBox(prev => ({ ...prev, x2: actualX, y2: actualY }));
@@ -337,6 +339,7 @@ function Board({
   };
 
   const handleMouseUp = () => {
+    if (!canDraw) return;
     if (tool === 'select' && selectionBox && selectionBox.visible) {
       setSelectionBox(null); 
       
@@ -434,7 +437,7 @@ function Board({
           onMouseUp={handleMouseUp}
           onMouseLeave={handleMouseUp}
           ref={stageRef}
-          style={{ cursor: getCursorStyle(tool, brushSize, zoomLevel) }}
+          style={{ cursor: canDraw ? getCursorStyle(tool, brushSize, zoomLevel) : 'not-allowed' }}
           
         >
           <Layer>

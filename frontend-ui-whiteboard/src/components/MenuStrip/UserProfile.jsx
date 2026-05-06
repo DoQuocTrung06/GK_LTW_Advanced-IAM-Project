@@ -1,21 +1,18 @@
-import React from 'react';
-import { MdClose, MdLogout, MdVerifiedUser, MdEmail } from "react-icons/md";
+import React, { useState } from 'react'; // BỔ SUNG: Import thêm useState
+import { MdClose, MdLogout, MdVerifiedUser, MdEmail} from "react-icons/md";
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { toast } from 'react-toastify';
 import './UserProfile.css';
 import { getUserColor } from '../Board/utils/userColors';
+import Setup2FA from './Setup2FA';
 
-/**
- * Hàm lấy 2 chữ cái đầu của tên làm Avatar (VD: "Do Quoc Trung" -> "DT")
- */
 const getInitials = (name) => {
   if (!name) return "U"; 
   const words = name.trim().split(/\s+/);
   if (words.length === 1) return words[0].charAt(0).toUpperCase();
   return (words[0].charAt(0) + words[words.length - 1].charAt(0)).toUpperCase();
 };
-
 
 function UserProfile({ isOpen, toggleProfile, closeMenu, currentUser, boardCreatorId }) { 
   const navigate = useNavigate();
@@ -40,15 +37,12 @@ function UserProfile({ isOpen, toggleProfile, closeMenu, currentUser, boardCreat
     }
   };
 
+
   const initials = getInitials(isLoggedIn ? currentUser.name : "");
-  
-  // TÍNH TOÁN MÀU DỰA TRÊN ID (Giống hệt cách Laravel làm)
-  // Nếu chưa đăng nhập (Guest) thì dùng lại màu Galaxy cũ
   const myColor = currentUser ? getUserColor(currentUser.id) : 'linear-gradient(135deg, #4f46e5 0%, #9333ea 100%)';
 
   return (
     <div className="pro-profile-container">
-      {/* TRIGGER AVATAR GÓC TRÊN */}
       <div onClick={toggleProfile} className={`pro-avatar-trigger ${isOpen ? 'active' : ''}`}>
         {isLoggedIn && currentUser.avatar ? (
           <img src={currentUser.avatar} alt="User Avatar" className="rounded-circle" />
@@ -59,7 +53,6 @@ function UserProfile({ isOpen, toggleProfile, closeMenu, currentUser, boardCreat
         )}
       </div>
 
-      {/* MENU DROP DOWN */}
       {isOpen && (
         <div className="pro-dropdown-card shadow-lg">
           <div className="pro-card-header">
@@ -70,7 +63,6 @@ function UserProfile({ isOpen, toggleProfile, closeMenu, currentUser, boardCreat
           </div>
 
           <div className="pro-card-body text-center">
-            {/* AVATAR LỚN BÊN TRONG */}
             <div className="avatar-preview-lg-container">
               {isLoggedIn && currentUser.avatar ? (
                 <img src={currentUser.avatar} alt="Profile" className="avatar-preview-lg" />
@@ -84,7 +76,6 @@ function UserProfile({ isOpen, toggleProfile, closeMenu, currentUser, boardCreat
             <h5 className="pro-user-name" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '5px' }}>
               {currentUser.name}
               
-              {/* NẾU LÀ ADMIN THÌ HIỆN HUY HIỆU */}
               {isLoggedIn && Number(currentUser.id) === Number(boardCreatorId) && (
                 <span title="Board Admin" style={{ color: '#fbbf24', display: 'flex' }}>
                    <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -97,10 +88,16 @@ function UserProfile({ isOpen, toggleProfile, closeMenu, currentUser, boardCreat
               <MdEmail /> {currentUser.email}   
             </p>
 
-            
-          </div>
+            {isLoggedIn && (
+              <Setup2FA 
+                currentUser={currentUser} 
+                onSetupSuccess={() => {
+                  currentUser.two_factor_enabled = true;
+                }} 
+              />
+            )}
 
-          
+          </div>
           
           <div className="pro-card-footer">
             <button className="pro-btn-logout" onClick={handleLogout}>

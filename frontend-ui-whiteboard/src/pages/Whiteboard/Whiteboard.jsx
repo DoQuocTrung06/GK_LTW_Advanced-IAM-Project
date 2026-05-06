@@ -9,6 +9,8 @@ import ShareModal from '../../components/ShareModal/ShareModal';
 import { useClipboard } from "../../components/Board/hooks/useClipboard";
 import { useBoardSync } from "../../components/Board/hooks/useBoardSync";
 import { useBoardTools } from "../../components/Board/hooks/useBoardTools";
+import { usePermissions } from "../../components/Board/hooks/usePermissions";
+import { toast } from 'react-toastify';
 
 function Whiteboard() {
   const { id } = useParams(); 
@@ -39,6 +41,22 @@ function Whiteboard() {
   const { boardData, currentUser, activeUsers, cursors, broadcastCursor } = useBoardSync(
     id, lines, setLines, setRedoStack, setBgImage
   );
+
+  const { canDraw, canManageBoard } = usePermissions(boardData?.role);
+
+  // Thêm đoạn này để báo quyền khi vừa vào phòng (Style Minimalist)
+  useEffect(() => {
+    if (boardData && boardData.role) {
+      if (boardData.role === 'owner') {
+        toast.info("Access level: Owner");
+      } else if (boardData.role === 'editor') {
+        toast.success("Access level: Editor (Can draw)");
+      } else if (boardData.role === 'viewer') {
+        // Thông báo cho viewer
+        toast.warning("Access level: Viewer (Read-only)");
+      }
+    }
+  }, [boardData?.role]);
 
   useEffect(() => {
     if (boardData && boardData.visibility) {
@@ -76,13 +94,19 @@ function Whiteboard() {
         onUndo={tools.handleUndo} onRedo={tools.handleRedo}
         onCut={clipboard.handleCut} onCopy={clipboard.handleCopy} onPaste={clipboard.handlePaste} 
         onZoomIn={tools.handleZoomIn} onZoomOut={tools.handleZoomOut} onResetZoom={tools.handleResetZoom}
-        onShare={() => setIsShareModalOpen(true)} 
+        onShare={() => {
+          if (canManageBoard) setIsShareModalOpen(true);
+          else toast.error("Only the owner can share this board!");
+        }}
       />
 
       <Toolbar 
         tool={tool} setTool={setTool} color={color} setColor={setColor}
         brushSize={brushSize} setBrushSize={setBrushSize}
-        onClearAll={() => setIsClearModalOpen(true)}
+        onClearAll={() => {
+          if (canManageBoard) setIsClearModalOpen(true);
+          else toast.error("Only the owner can clear the board!");
+        }}
       />
       
       <div style={{ flex: 1, position: 'relative', overflow: 'hidden' }}>
@@ -93,6 +117,7 @@ function Whiteboard() {
           zoomLevel={tools.zoomLevel} bgImage={bgImage} setColor={setColor}
           selectedItemIds={selectedItemIds} setSelectedItemIds={setSelectedItemIds}
           cursors={cursors} broadcastCursor={broadcastCursor}
+          canDraw={canDraw}
         />
       </div>
 

@@ -33,6 +33,8 @@ Route::middleware('auth:api')->group(function () {
     
     // Đăng xuất (Cần có token mới đăng xuất được)
     Route::post('/logout', [AuthController::class, 'logout']);
+    Route::get('/user/2fa/generate', [AuthController::class, 'generate2FA']);
+    Route::post('/user/2fa/verify', [AuthController::class, 'verifyAndEnable2FA']);
 
     Route::get('/user', function (Request $request) {
         return $request->user();
@@ -47,3 +49,5 @@ Route::middleware('auth:api')->group(function () {
 
 // Cổng xác thực cho WebSocket Reverb cũng đổi sang JWT
 Broadcast::routes(['middleware' => ['auth:api']]);
+
+Route::post('/login/2fa-verify', [App\Http\Controllers\Api\AuthController::class, 'verify2FALogin']);

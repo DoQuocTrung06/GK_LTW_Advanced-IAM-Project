@@ -3,10 +3,13 @@ import { MdClose, MdContentCopy, MdPublic, MdLock } from 'react-icons/md';
 import { toast } from 'react-toastify';
 import './ShareModal.css';
 
-// 1. THÊM PROP onVisibilityUpdated VÀO ĐÂY
 function ShareModal({ isOpen, onClose, boardId, currentVisibility, onVisibilityUpdated }) {
   const [visibility, setVisibility] = useState(currentVisibility || 'private');
   const [inviteEmail, setInviteEmail] = useState('');
+  
+  // 1. THÊM STATE: Lưu quyền của người chuẩn bị được mời (Mặc định là viewer cho an toàn)
+  const [inviteRole, setInviteRole] = useState('viewer'); 
+  
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
@@ -40,14 +43,16 @@ function ShareModal({ isOpen, onClose, boardId, currentVisibility, onVisibilityU
           'Accept': 'application/json',
           'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify({ email: inviteEmail })
+        // 2. SỬA CHỖ NÀY: Kẹp thêm cái role gửi xuống Backend
+        body: JSON.stringify({ email: inviteEmail, role: inviteRole }) 
       });
 
       const data = await response.json();
 
       if (response.ok) {
-        toast.success(`Access granted to ${inviteEmail}!`); 
-        setInviteEmail('');
+        toast.success(`Invited ${inviteEmail} as ${inviteRole}!`); 
+        setInviteEmail(''); // Xóa ô email đi để mời người khác
+        setInviteRole('viewer'); // Reset lại quyền về mặc định
       } else {
         toast.error(data.message || "Could not invite this email."); 
       }
@@ -60,6 +65,7 @@ function ShareModal({ isOpen, onClose, boardId, currentVisibility, onVisibilityU
   };
 
   const handleVisibilityChange = async (e) => {
+    // ... (Code phần này giữ nguyên như cũ của bạn) ...
     const newVisibility = e.target.value;
     const previousVisibility = visibility;
     
@@ -82,12 +88,9 @@ function ShareModal({ isOpen, onClose, boardId, currentVisibility, onVisibilityU
 
       if (response.ok) {
         toast.success(newVisibility === 'public' ? "Changed to Public!" : "Changed to Private!"); 
-        
-        // 2. NẾU THÀNH CÔNG, GỌI HÀM NÀY ĐỂ BÁO CHO THẰNG CHA BIẾT MÀ CẬP NHẬT
         if (onVisibilityUpdated) {
           onVisibilityUpdated(newVisibility);
         }
-
       } else {
         setVisibility(previousVisibility);
         toast.error(data.message || "Error updating visibility."); 
@@ -110,6 +113,7 @@ function ShareModal({ isOpen, onClose, boardId, currentVisibility, onVisibilityU
           </button>
         </div>
 
+        {/* 3. NÂNG CẤP GIAO DIỆN FORM: Thêm ô Select Role nằm chen giữa Email và nút Invite */}
         <form onSubmit={handleInvite} style={{ display: 'flex', gap: '8px', marginBottom: '24px' }}>
           <input 
             type="email" 
@@ -117,9 +121,21 @@ function ShareModal({ isOpen, onClose, boardId, currentVisibility, onVisibilityU
             value={inviteEmail}
             onChange={(e) => setInviteEmail(e.target.value)}
             disabled={isLoading}
+            style={{ flex: 1, padding: '8px', borderRadius: '4px', border: '1px solid #cbd5e1' }}
           />
-          <button type="submit" disabled={isLoading} style={{ opacity: isLoading ? 0.7 : 1 }}>
-            {isLoading ? 'Sending...' : 'Invite'}
+          
+          <select 
+            value={inviteRole}
+            onChange={(e) => setInviteRole(e.target.value)}
+            disabled={isLoading}
+            style={{ padding: '8px', borderRadius: '4px', border: '1px solid #cbd5e1', backgroundColor: 'white', cursor: 'pointer' }}
+          >
+            <option value="viewer">Viewer</option>
+            <option value="editor">Editor</option>
+          </select>
+
+          <button type="submit" disabled={isLoading} style={{ opacity: isLoading ? 0.7 : 1, padding: '8px 16px', borderRadius: '4px', cursor: 'pointer' }}>
+            {isLoading ? '...' : 'Invite'}
           </button>
         </form>
 
@@ -130,6 +146,7 @@ function ShareModal({ isOpen, onClose, boardId, currentVisibility, onVisibilityU
             <select 
               value={visibility} 
               onChange={handleVisibilityChange}
+              style={{ padding: '8px', borderRadius: '4px', border: '1px solid #cbd5e1', backgroundColor: 'transparent', cursor: 'pointer', outline: 'none' }}
             >
               <option value="private">Restricted (Only invited people)</option>
               <option value="public">Anyone with the link</option>
@@ -140,10 +157,10 @@ function ShareModal({ isOpen, onClose, boardId, currentVisibility, onVisibilityU
         <hr style={{ border: 'none', borderTop: '1px solid #e2e8f0', margin: '16px 0' }} />
 
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <button type="button" className="copy-btn" onClick={handleCopyLink}>
+          <button type="button" className="copy-btn" onClick={handleCopyLink} style={{ display: 'flex', alignItems: 'center', gap: '4px', padding: '8px 12px', cursor: 'pointer' }}>
             <MdContentCopy size={18} /> Copy link
           </button>
-          <button type="button" className="done-btn" onClick={onClose}>
+          <button type="button" className="done-btn" onClick={onClose} style={{ padding: '8px 24px', cursor: 'pointer' }}>
             Done
           </button>
         </div>
