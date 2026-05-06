@@ -28,4 +28,4 @@
         If you don't have an account yet, you will be prompted to sign up to access this private board. <br>
         If you didn't expect this invite, you can safely ignore this email.
     </p>
-</div><?php /**PATH C:\Users\ASUS\WebSocket\backend-api\resources\views/emails/board_invite.blade.php ENDPATH**/ ?>
+</div><?php /**PATH /var/www/resources/views/emails/board_invite.blade.php ENDPATH**/ ?>

@@ -1,0 +1,87 @@
+version: '3.8'
+
+services:
+  db:
+    image: mysql:8.0
+    container_name: whiteboard_db
+    restart: always
+    environment:
+      MYSQL_DATABASE: whiteboard_db
+      MYSQL_ROOT_PASSWORD: root
+    ports:
+      - "3306:3306"
+    volumes:
+      - ./mysql-init:/docker-entrypoint-initdb.d
+      - db_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-proot"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  backend:
+    build:
+      context: ./backend-api
+      dockerfile: Dockerfile
+    container_name: whiteboard_backend
+    restart: always
+    ports:
+      - "8000:8000"
+    env_file:
+      - ./backend-api/.env
+    volumes:
+      - ./backend-api:/var/www
+    environment:
+      - DB_CONNECTION=mysql
+      - DB_HOST=db
+      - DB_PORT=3306
+      - DB_DATABASE=whiteboard_db
+      - DB_USERNAME=root
+      - DB_PASSWORD=root
+      - REVERB_HOST=reverb        
+      - REVERB_PORT=8080          
+      - REVERB_SCHEME=http        
+    depends_on:
+      db:
+        condition: service_healthy
+
+  reverb:
+    build:
+      context: ./backend-api
+      dockerfile: Dockerfile
+    container_name: whiteboard_reverb
+    restart: always
+    ports:
+      - "8080:8080"
+    env_file:
+      - ./backend-api/.env
+    volumes:
+      - ./backend-api:/var/www
+    environment:
+      - DB_CONNECTION=mysql
+      - DB_HOST=db
+      - DB_PORT=3306
+      - DB_DATABASE=whiteboard_db
+      - DB_USERNAME=root
+      - DB_PASSWORD=root
+    command: php artisan reverb:start --host=0.0.0.0 --port=8080
+    depends_on:
+      db:
+        condition: service_healthy
+
+  frontend:
+    build:
+      context: ./frontend-ui-whiteboard
+      dockerfile: Dockerfile
+    container_name: whiteboard_frontend
+    restart: always
+    ports:
+      - "5173:5173"
+    env_file:
+      - ./frontend-ui-whiteboard/.env
+    depends_on:
+      - backend
+      - reverb
+
+volumes:
+  db_data:
