@@ -22,7 +22,7 @@ function UserProfile({ isOpen, toggleProfile, closeMenu, currentUser, boardCreat
     try {
       const token = localStorage.getItem('auth_token');
       if (token) {
-        await axios.post('http://localhost:8000/api/logout', {}, {
+        await axios.post(`${import.meta.env.VITE_API_URL}/logout`, {}, {
           headers: { Authorization: `Bearer ${token}` }
         });
       }

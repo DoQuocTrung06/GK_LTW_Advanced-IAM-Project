@@ -50,11 +50,16 @@ export const useBoardSync = (id, lines, setLines, setRedoStack, setBgImage) => {
         // Xử lý lỗi 403
         if (response.status === 403) {
           toast.error("Access denied. You don't have permission to view this board.");
-          navigate('/');
+          // SỬA DÒNG DƯỚI ĐÂY: Đổi '/' thành '/404'
+          navigate('/404'); 
           return;
         }
 
-        if (!response.ok) throw new Error(response.status === 404 ? "Board not found" : "Server error");
+        if (!response.ok) {
+           toast.error(response.status === 404 ? "Board not found" : "Server error");
+           navigate('/404');
+           return;
+        }
 
         const data = await response.json();
         setBoardData(data);

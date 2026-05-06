@@ -15,7 +15,7 @@ function Setup2FA({ currentUser, onSetupSuccess }) {
     setIsLoading(true);
     try {
       const token = localStorage.getItem('auth_token');
-      const response = await axios.get('http://localhost:8000/api/user/2fa/generate', {
+      const response = await axios.get(`${import.meta.env.VITE_API_URL}/user/2fa/generate`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setQrData({
@@ -38,7 +38,7 @@ function Setup2FA({ currentUser, onSetupSuccess }) {
     setIsVerifying(true);
     try {
       const token = localStorage.getItem('auth_token');
-      await axios.post('http://localhost:8000/api/user/2fa/verify', 
+      await axios.post(`${import.meta.env.VITE_API_URL}/user/2fa/verify`, 
         { otp: otpCode },
         { headers: { Authorization: `Bearer ${token}` } }
       );

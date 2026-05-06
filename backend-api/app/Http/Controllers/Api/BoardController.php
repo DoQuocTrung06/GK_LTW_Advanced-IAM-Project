@@ -97,7 +97,7 @@ class BoardController extends Controller
                     $userRole = $invite->role ?? 'viewer'; 
                 } elseif ($board->visibility === 'public') {
                     // Nếu phòng public mà không được mời, cho phép vào xem (chỉ xem, không vẽ)
-                    $userRole = 'viewer'; 
+                    $userRole = 'editor'; 
                 } else {
                     // Phòng private và không được mời -> Đuổi ra
                     return response()->json(['message' => 'You do not have permission to view this board.'], 403);

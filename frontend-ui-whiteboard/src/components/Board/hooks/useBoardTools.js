@@ -20,7 +20,7 @@ export const useBoardTools = ({
       };
       if (echo.socketId()) headers['X-Socket-ID'] = echo.socketId();
 
-      // ĐÃ SỬA: Dùng import.meta.env.VITE_API_URL thay cho http://localhost:8000/api
+      
       fetch(`${import.meta.env.VITE_API_URL}/boards/${boardData.id}/broadcast-draw`, {
         method: 'POST',
         headers: headers,

@@ -49,7 +49,7 @@ function Register() {
     setIsLoading(true);
     try {
       // 1. Dùng axios.post để gửi dữ liệu đăng ký
-      const response = await axios.post('http://localhost:8000/api/register', {
+      const response = await axios.post(`${import.meta.env.VITE_API_URL}/register`, {
           name: formData.name,
           email: formData.email,
           password: formData.password,

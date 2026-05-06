@@ -9,8 +9,7 @@ class BoardInvite extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['board_id', 'email'];
-
+    protected $fillable = ['board_id', 'email', 'role'];
     // Mối quan hệ: Thư mời này thuộc về bảng vẽ nào
     public function board()
     {

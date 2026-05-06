@@ -236,6 +236,55 @@ class AuthController extends Controller
         }
     }
 
+    // ==========================================
+    // Xử lý GitHub OAuth2.0
+    // ==========================================
+    public function redirectToGithub()
+    {
+        /** @var \Laravel\Socialite\Two\GithubProvider $driver */
+        $driver = Socialite::driver('github');
+        return $driver->stateless()->redirect();
+    }
+
+    public function handleGithubCallback()
+    {
+        try {
+            /** @var \Laravel\Socialite\Two\GithubProvider $driver */
+            $driver = Socialite::driver('github');
+            $githubUser = $driver->stateless()->user();
+
+            // Tìm hoặc tạo user dựa vào Email
+            $user = User::updateOrCreate(
+                ['email' => $githubUser->getEmail()],
+                [
+                    // GitHub đôi khi không có Name, nên dùng Nickname thay thế
+                    'name' => $githubUser->getName() ?? $githubUser->getNickname(), 
+                    'password' => null, 
+                    'email_verified_at' => Carbon::now(),
+                ]
+            );
+
+            $frontendUrl = env('FRONTEND_URL', 'http://localhost:5173');
+
+            // --- KIỂM TRA 2FA GIỐNG NHƯ GOOGLE ---
+            if ($user->two_factor_enabled) {
+                $loginSessionId = (string) \Illuminate\Support\Str::uuid();
+                Cache::put('2fa_login_' . $loginSessionId, $user->id, Carbon::now()->addMinutes(5));
+                return redirect()->away($frontendUrl . '/login?requires_2fa=true&session_id=' . $loginSessionId);
+            }
+
+            // Nếu không bật 2FA thì cấp Token vào thẳng
+            $token = JWTAuth::fromUser($user);
+            $userData = base64_encode(json_encode($user));
+
+            return redirect()->away($frontendUrl . '/oauth/callback?token=' . $token . '&user=' . $userData);
+
+        } catch (\Exception $e) {
+            $frontendUrl = env('FRONTEND_URL', 'http://localhost:5173');
+            return redirect()->away($frontendUrl . '/login?error=Github_Auth_Failed');
+        }
+    }
+
 
     /**
      * Handle resending OTP (Dành cho cơ chế Cache)

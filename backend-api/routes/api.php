@@ -24,6 +24,9 @@ Route::post('/reset-password', [ForgotPasswordController::class, 'resetPassword'
 Route::get('/auth/google', [AuthController::class, 'redirectToGoogle']);
 Route::get('/auth/google/callback', [AuthController::class, 'handleGoogleCallback']);
 
+Route::get('/auth/github', [AuthController::class, 'redirectToGithub']);
+Route::get('/auth/github/callback', [AuthController::class, 'handleGithubCallback']);
+
 /*
 |--------------------------------------------------------------------------
 | Private Routes (ĐỔI 'auth:sanctum' THÀNH 'auth:api' ĐỂ DÙNG JWT)
@@ -51,3 +54,5 @@ Route::middleware('auth:api')->group(function () {
 Broadcast::routes(['middleware' => ['auth:api']]);
 
 Route::post('/login/2fa-verify', [App\Http\Controllers\Api\AuthController::class, 'verify2FALogin']);
+
+

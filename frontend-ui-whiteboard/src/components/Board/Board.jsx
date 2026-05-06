@@ -89,7 +89,7 @@ function Board({
       const dataToSend = { ...actionData };
       delete dataToSend.imageObj; 
 
-      fetch(`http://localhost:8000/api/boards/${boardId}/broadcast-draw`, {
+      fetch(`${import.meta.env.VITE_API_URL}/boards/${boardId}/broadcast-draw`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

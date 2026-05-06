@@ -192,7 +192,7 @@ export const useClipboard = ({
     const token = localStorage.getItem('auth_token');
     if (!token || !boardData?.id || boardData.id === 'temp') return;
 
-    fetch(`http://localhost:8000/api/boards/${boardData.id}/broadcast-draw`, {
+    fetch(`${import.meta.env.VITE_API_URL}/boards/${boardData.id}/broadcast-draw`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

@@ -11,6 +11,7 @@ import {
 import './Auth.css';
 import { toast } from 'react-toastify';
 import { FcGoogle } from "react-icons/fc";
+import { FaGithub } from "react-icons/fa";
 
 function Login() {
     const navigate = useNavigate();
@@ -34,6 +35,9 @@ function Login() {
         else if (queryParams.get('error') === 'Google_Auth_Failed') {
             setError("Google Authentication Failed. Please try again.");
         }
+        else if (queryParams.get('error') === 'Github_Auth_Failed') {
+            setError("GitHub Authentication Failed. Please try again.");
+        }
     }, [location]);
     const [otp, setOtp] = useState('');
 
@@ -42,8 +46,12 @@ function Login() {
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState('');
 
+    const handleGithubLogin = () => {
+        window.location.href = `${import.meta.env.VITE_API_URL}/auth/github`;
+    };
+
     const handleGoogleLogin = () => {
-        window.location.href = 'http://localhost:8000/api/auth/google';
+        window.location.href = `${import.meta.env.VITE_API_URL}/auth/google`;
     };
 
     // Hàm dùng chung để xử lý khi đăng nhập thành công hoàn toàn (lưu token, chuyển trang)
@@ -68,7 +76,7 @@ function Login() {
         setError(''); 
 
         try {
-            const response = await fetch('http://localhost:8000/api/login', {
+            const response = await fetch(`${import.meta.env.VITE_API_URL}/login`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -112,7 +120,7 @@ function Login() {
         }
 
         try {
-            const response = await fetch('http://localhost:8000/api/login/2fa-verify', {
+            const response = await fetch(`${import.meta.env.VITE_API_URL}/login/2fa-verify`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -248,6 +256,17 @@ function Login() {
                         <button type="button" onClick={handleGoogleLogin} className="btn-auth-google">
                             <FcGoogle size={20} />
                             <span>Google</span>
+                        </button>
+
+                        {/* NÚT GITHUB MỚI */}
+                        <button 
+                            type="button" 
+                            onClick={handleGithubLogin} 
+                            className="btn-auth-google" 
+                            style={{ marginTop: '10px', background: '#24292e', color: 'white' }}
+                        >
+                            <FaGithub size={20} />
+                            <span>GitHub</span>
                         </button>
 
                         <div className="auth-footer">

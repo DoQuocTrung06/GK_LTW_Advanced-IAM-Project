@@ -4,7 +4,11 @@
     </div>
     
     <p style='color: #475569; font-size: 15px; line-height: 1.6;'>
-        Hello! You have been invited to collaborate on a private <strong>Magic Whiteboard</strong>. 
+        Hello! You have been invited to collaborate on a private <strong>Magic Whiteboard</strong>.<br><br>
+        
+        Your access level is: <strong style="color: #4f46e5; text-transform: uppercase; background-color: #e0e7ff; padding: 4px 8px; border-radius: 4px;"><?php echo e($role); ?></strong>
+        <br><br>
+
         Click the button below to join the board and start drawing together in real-time.
     </p>
     

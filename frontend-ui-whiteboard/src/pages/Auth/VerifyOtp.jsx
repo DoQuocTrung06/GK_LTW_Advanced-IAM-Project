@@ -30,7 +30,7 @@ function VerifyOtp() {
     setIsLoading(true);
 
     try {
-      const response = await axios.post('http://localhost:8000/api/verify-otp', {
+      const response = await axios.post(`${import.meta.env.VITE_API_URL}/verify-otp`, {
         email: email, 
         otp: otp
       });
@@ -59,8 +59,8 @@ function VerifyOtp() {
     try {
       // SỬA LỖI LOGIC TẠI ĐÂY: Nếu là luồng quên MK thì phải gọi API forgot-password để lấy OTP mới
       const endpoint = flow === 'FORGOT_PASSWORD' 
-          ? 'http://localhost:8000/api/forgot-password'
-          : 'http://localhost:8000/api/resend-otp';
+          ? `${import.meta.env.VITE_API_URL}/forgot-password`
+          : `${import.meta.env.VITE_API_URL}/resend-otp`;
 
       const response = await axios.post(endpoint, { email: email });
       toast.success(response.data.message || "A new OTP code has been sent!");

@@ -104,8 +104,13 @@ function Whiteboard() {
         tool={tool} setTool={setTool} color={color} setColor={setColor}
         brushSize={brushSize} setBrushSize={setBrushSize}
         onClearAll={() => {
-          if (canManageBoard) setIsClearModalOpen(true);
-          else toast.error("Only the owner can clear the board!");
+          // SỬA Ở ĐÂY: Dùng canDraw để Owner và Editor đều được phép Clear
+          if (canDraw) { 
+             setIsClearModalOpen(true);
+          } else {
+             // Sửa lại câu thông báo cho hợp lý
+             toast.error("Only owners and editors can clear the board!"); 
+          }
         }}
       />
       
