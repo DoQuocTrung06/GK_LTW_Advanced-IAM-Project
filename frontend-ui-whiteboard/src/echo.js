@@ -11,6 +11,11 @@ const echo = new Echo({
     wssPort: import.meta.env.VITE_REVERB_PORT || 8080,
     forceTLS: false,
     enabledTransports: ['ws', 'wss'],
+
+    activityTimeout: 30000,      // chờ 30s trước khi timeout
+    pongTimeout: 10000,          // chờ 10s cho pong response  
+    unavailableTimeout: 10000,   // chờ 10s khi unavailable
+
     // SỬA: Dùng biến môi trường cho đồng bộ
     authEndpoint: `${import.meta.env.VITE_API_URL}/broadcasting/auth`, 
     authorizer: (channel, options) => {

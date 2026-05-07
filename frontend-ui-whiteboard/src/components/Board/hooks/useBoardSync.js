@@ -189,7 +189,7 @@ export const useBoardSync = (id, lines, setLines, setRedoStack, setBgImage) => {
         },
         body: JSON.stringify({ board_data: lines }) 
       }).catch(err => console.error("Lỗi auto-save:", err));
-    }, 2000); 
+    }, 5000); 
     return () => clearTimeout(autoSaveTimer);
   }, [lines, boardData?.id]);
 
