@@ -1,3 +1,10 @@
+# Chú ý
+- Do dùng phải mở docker và chương trình vì thế sẽ xảy ra độ trễ khi kết nối lần đầu
+- chờ 30s trước khi timeout
+- chờ 10s cho pong response
+- chờ 10s khi unavailable
+- Việc vẽ cộng tác thời gian thực giữ các tài khoản với nhau sẽ hơi lag và phản hồi chậm khi kết nối lần đàu
+
 # Magic Whiteboard
 
 Ứng dụng bảng vẽ cộng tác thời gian thực được xây dựng bằng React, Laravel và WebSockets.
@@ -33,7 +40,7 @@ Khi thấy đủ 4 dòng sau là thành công:
 http://localhost:5173
 
 ## Tài khoản test
-- Có thể tự tạo tài khoản bằng cách bấm vào sign up và nhận được email gửi otp 6 số để xác thực
+- Có thể tự tạo tài khoản bằng cách bấm vào sign up nhập thông tin và nhận được email gửi otp 6 số để xác thực
 - Đăng nhập bằng các tài khoản google
 - Đăng nhập bằng các tài khoản Github
 - 
