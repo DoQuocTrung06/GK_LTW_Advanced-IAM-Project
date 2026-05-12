@@ -5,7 +5,7 @@ import Toolbar from '../../components/Toolbar/Toolbar';
 import MenuStrip from '../../components/MenuStrip/MenuStrip'; 
 import ShareModal from '../../components/ShareModal/ShareModal';
 
-// Gọi 3 Custom Hooks
+
 import { useClipboard } from "../../components/Board/hooks/useClipboard";
 import { useBoardSync } from "../../components/Board/hooks/useBoardSync";
 import { useBoardTools } from "../../components/Board/hooks/useBoardTools";
@@ -17,7 +17,7 @@ function Whiteboard() {
   const stageRef = useRef(null);
   const fileInputRef = useRef(null);
 
-  // States cơ bản của bảng vẽ
+
   const [lines, setLines] = useState([]);
   const [redoStack, setRedoStack] = useState([]);
   const [selectedItemIds, setSelectedItemIds] = useState([]);
@@ -32,19 +32,19 @@ function Whiteboard() {
   const [color, setColor] = useState('#000000');
   const [brushSize, setBrushSize] = useState(5);
   
-  // UI States (Modals)
+  
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const [isClearModalOpen, setIsClearModalOpen] = useState(false);
-  const [boardVisibility, setBoardVisibility] = useState('private'); // thêm
+  const [boardVisibility, setBoardVisibility] = useState('private'); 
 
-  // --- KẾT NỐI CÁC LOGIC HOOKS ---
+  
   const { boardData, currentUser, activeUsers, cursors, broadcastCursor } = useBoardSync(
     id, lines, setLines, setRedoStack, setBgImage
   );
 
   const { canDraw, canManageBoard } = usePermissions(boardData?.role);
 
-  // Thêm đoạn này để báo quyền khi vừa vào phòng (Style Minimalist)
+
   useEffect(() => {
     if (boardData && boardData.role) {
       if (boardData.role === 'owner') {
@@ -52,7 +52,6 @@ function Whiteboard() {
       } else if (boardData.role === 'editor') {
         toast.success("Access level: Editor (Can draw)");
       } else if (boardData.role === 'viewer') {
-        // Thông báo cho viewer
         toast.warning("Access level: Viewer (Read-only)");
       }
     }
@@ -72,7 +71,7 @@ function Whiteboard() {
     lines, setLines, selectedItemIds, setSelectedItemIds, tool, boardData, stageRef
   });
 
-  // Helper cho Menu
+  
   const handleNewBoard = () => window.open('/', '_blank'); 
   const handleOpenLocalFile = () => fileInputRef.current.click(); 
 
@@ -104,11 +103,11 @@ function Whiteboard() {
         tool={tool} setTool={setTool} color={color} setColor={setColor}
         brushSize={brushSize} setBrushSize={setBrushSize}
         onClearAll={() => {
-          // SỬA Ở ĐÂY: Dùng canDraw để Owner và Editor đều được phép Clear
+          
           if (canDraw) { 
              setIsClearModalOpen(true);
           } else {
-             // Sửa lại câu thông báo cho hợp lý
+             
              toast.error("Only owners and editors can clear the board!"); 
           }
         }}

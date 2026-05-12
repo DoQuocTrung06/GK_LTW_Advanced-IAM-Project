@@ -10,22 +10,18 @@ class VerifyOtpMail extends Mailable
 {
     use Queueable, SerializesModels;
 
-    public String $otpCode; // Biến lưu mã OTP
+    public String $otpCode; 
 
-    /**
-     * Create a new message instance.
-     */
+    
     public function __construct(String $otp)
     {
-        $this->otpCode = $otp; // Gán giá trị mã OTP khi khởi tạo
+        $this->otpCode = $otp; 
     }
 
-    /**
-     * Build the message.
-     */
+    
     public function build()
     {
-        return $this->subject('Magic Whiteboard - Verification Code') // Tiêu đề email
+        return $this->subject('Magic Whiteboard - Verification Code') 
                     ->html("
                         <div style='font-family: Arial, sans-serif; border: 1px solid #e2e8f0; padding: 30px; max-width: 500px; margin: 0 auto; border-radius: 12px; background-color: #ffffff; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);'>
                             <div style='text-align: center; margin-bottom: 20px;'>
@@ -42,6 +38,6 @@ class VerifyOtpMail extends Mailable
                             <hr style='border: none; border-top: 1px solid #e2e8f0; margin: 25px 0;'>
                             <p style='font-size: 12px; color: #94a3b8; line-height: 1.5; text-align: center;'>If you didn't request this registration, you can safely ignore this email.</p>
                         </div>
-                    "); // Nội dung email định dạng HTML
+                    "); 
     }
 }

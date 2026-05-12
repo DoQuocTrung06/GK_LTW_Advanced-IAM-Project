@@ -12,17 +12,13 @@ class ResetPasswordMail extends Mailable
 
     public String $otpCode;
 
-    /**
-     * Create a new message instance.
-     */
+    
     public function __construct(String $otp)
     {
         $this->otpCode = $otp;
     }
 
-    /**
-     * Build the message.
-     */
+    
     public function build()
     {
         return $this->subject('Magic Whiteboard - Password Reset Code')

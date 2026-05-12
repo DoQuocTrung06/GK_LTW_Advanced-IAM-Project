@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import { toast } from 'react-toastify';
 import { MdSecurity, MdContentCopy, MdCheckCircle } from "react-icons/md";
-import './Setup2FA.css'; // Lát nữa tạo file CSS này
+import './Setup2FA.css'; 
 
 function Setup2FA({ currentUser, onSetupSuccess }) {
   const [qrData, setQrData] = useState(null);
@@ -10,7 +10,7 @@ function Setup2FA({ currentUser, onSetupSuccess }) {
   const [otpCode, setOtpCode] = useState('');
   const [isVerifying, setIsVerifying] = useState(false);
 
-  // 1. Gọi API lấy mã QR
+  
   const handleGenerate2FA = async () => {
     setIsLoading(true);
     try {
@@ -29,7 +29,7 @@ function Setup2FA({ currentUser, onSetupSuccess }) {
     }
   };
 
-  // 2. Gọi API gửi mã 6 số lên để xác nhận bật 2FA
+  
   const handleVerify2FA = async () => {
     if (otpCode.length !== 6) {
       toast.warning("Please enter a valid 6-digit code.");
@@ -46,7 +46,7 @@ function Setup2FA({ currentUser, onSetupSuccess }) {
       toast.success("2FA Enabled Successfully!");
       setQrData(null); 
       
-      // Báo cho component cha (UserProfile) biết là đã bật thành công
+      
       if (onSetupSuccess) {
         onSetupSuccess();
       }
@@ -65,7 +65,7 @@ function Setup2FA({ currentUser, onSetupSuccess }) {
     }
   };
 
-  // Nếu user đã bật 2FA rồi thì hiển thị thông báo đã bảo mật
+ 
   if (currentUser?.two_factor_enabled) {
     return (
       <div className="pro-2fa-enabled-badge">
@@ -75,7 +75,7 @@ function Setup2FA({ currentUser, onSetupSuccess }) {
     );
   }
 
-  // Nếu chưa bật, và chưa bấm "Setup"
+  
   if (!qrData) {
     return (
       <button className="pro-btn-2fa" onClick={handleGenerate2FA} disabled={isLoading}>
@@ -84,7 +84,7 @@ function Setup2FA({ currentUser, onSetupSuccess }) {
     );
   }
 
-  // Giao diện khi đang hiển thị mã QR và ô nhập mã 6 số
+ 
   return (
     <div className="pro-2fa-box">
       <p className="pro-2fa-instruction">1. Scan QR with Authenticator app:</p>
@@ -109,7 +109,7 @@ function Setup2FA({ currentUser, onSetupSuccess }) {
           maxLength="6"
           placeholder="000000" 
           value={otpCode}
-          onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, ''))} // Chỉ cho nhập số
+          onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, ''))} 
           className="otp-input-control"
         />
         <button 

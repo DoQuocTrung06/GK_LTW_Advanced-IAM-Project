@@ -4,7 +4,6 @@ import Konva from 'konva';
 import './Board.css';
 import ShapeRenderer from './ShapeRenderer';
 
-// Các Import từ việc tách file
 import { rgbToHex } from './utils/colorUtils';
 import { getCursorStyle } from './utils/cursorUtils';
 import { useBoardResize } from './hooks/useBoardResize';
@@ -14,7 +13,7 @@ import LiveCursors from './LiveCursors'
 function Board({ 
     boardId, lines, setLines, tool, color, setColor, brushSize, stageRef, 
     clearRedo, zoomLevel = 1, bgImage, selectedItemIds, setSelectedItemIds,
-    // 1. THÊM 2 PROPS NÀY VÀO CUỐI:
+    
     cursors, broadcastCursor, canDraw
   }) {
   const isDrawing = useRef(false);  
@@ -29,21 +28,19 @@ function Board({
   const [activeTextInput, setActiveTextInput] = useState(null);
   const [imageObj, setImageObj] = useState(null);
 
-  // Hook thu phóng giấy
+  
   const { paperSize, setPaperSize, paperRef, handleResizeStart } = useBoardResize(zoomLevel);
-  // Hook đổ mực
+  
   const { performFloodFill } = useFloodFill(stageRef, setLines, clearRedo, lines, linesRef);
 
   const processedFillIds = useRef(new Set());
 
   useEffect(() => {
-    // Dọn ID của shape đã bị xóa khỏi Set
     const currentIds = new Set(lines.map(l => l.id));
     processedFillIds.current.forEach(id => {
       if (!currentIds.has(id)) processedFillIds.current.delete(id);
     });
 
-    // Tìm fill chưa có imageObj (paste hoặc nhận từ socket)
     const fillsNeedingRender = lines.filter(
       line =>
         line.tool === 'fill' &&
@@ -105,7 +102,6 @@ function Board({
     const draggedId = e.target.id(); 
     let currentIds = selectedItemIdsRef.current || [];
 
-    // Ensure family (outline + fill) is deeply linked when dragging starts
     if (draggedId !== 'drag-overlay' && !currentIds.includes(draggedId)) {
       const family = new Set([draggedId]);
       let changed = true;
@@ -176,7 +172,7 @@ function Board({
     }, 0);
   };
 
-  // HÀM MỚI: Gom cả họ hàng Viền + Màu khi click vào 1 trong 2
+ 
   const handleSelectShape = (id) => {
     const family = new Set([id]);
     let changed = true;
@@ -300,7 +296,7 @@ function Board({
     const actualX = pos.x / zoomLevel;
     const actualY = pos.y / zoomLevel;
 
-    // Gửi tọa độ cho người khác (mỗi 50 mili-giây gửi 1 lần cho nhẹ máy)
+    
     const now = Date.now();
     if (now - lastCursorTime.current > 50) {
       if (typeof broadcastCursor === 'function') {
@@ -430,8 +426,8 @@ function Board({
           scaleX={zoomLevel} 
           scaleY={zoomLevel} 
           onMouseDown={(e) => {
-            handleStageMouseDown(e);  // clear select khi click ngoài
-            handleMouseDown(e);       // logic vẽ/select cũ
+            handleStageMouseDown(e);  
+            handleMouseDown(e);       
           }}
           onMouseMove={handleMouseMove}
           onMouseUp={handleMouseUp}
@@ -457,10 +453,10 @@ function Board({
                     rotation={shape.rotation || 0}
                     draggable={tool === 'select'} 
                     onDragStart={handleGroupDragStart} onDragMove={handleGroupDragMove} onDragEnd={handleGroupDragEnd}
-                    // ✅ FIX 2: Thêm sự kiện Click để trỏ chuột nhấp vào MÀU là tự chộp luôn cả VIỀN
+                    
                     onMouseDown={(e) => {
                       if (tool === 'select') {
-                        e.cancelBubble = true; // Chặn không cho click xuyên xuống nền
+                        e.cancelBubble = true; 
                         handleSelectShape(shape.id);
                       }
                     }}
@@ -479,7 +475,6 @@ function Board({
                   shape={shape} 
                   currentTool={tool}
                   onSelect={(id) => {
-                    // Force selecting both Outline and Fill when clicked directly
                     const family = new Set([id]);
                     let changed = true;
                     while(changed) {
@@ -515,7 +510,6 @@ function Board({
                 const activeNodes = trRef.current.nodes(); 
 
                 const updatedLines = lines.map(line => {
-                  // 1. If line is the directly transformed outline
                   const activeNode = activeNodes.find(n => n.id() === line.id);
                   if (activeNode) {
                     const newLine = { ...line, x: activeNode.x(), y: activeNode.y(), scaleX: activeNode.scaleX(), scaleY: activeNode.scaleY(), rotation: activeNode.rotation() };
@@ -523,11 +517,9 @@ function Board({
                     return newLine;
                   }
 
-                  // 2. CRITICAL FIX: If line is a FILL related to the transformed outline
                   if (line.relatedShapeId) {
                     const parentNode = activeNodes.find(n => n.id() === line.relatedShapeId);
                     if (parentNode) {
-                      // Apply the EXACT same transform metrics to the fill shape
                       const newLine = { ...line, x: parentNode.x(), y: parentNode.y(), scaleX: parentNode.scaleX(), scaleY: parentNode.scaleY(), rotation: parentNode.rotation() };
                       broadcastData({ ...newLine, isLocal: true });
                       return newLine;

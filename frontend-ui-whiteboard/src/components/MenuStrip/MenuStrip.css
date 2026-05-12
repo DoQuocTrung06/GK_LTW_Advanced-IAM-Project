@@ -9,16 +9,16 @@
   z-index: 9999;
 }
 .menu-item {
-  position: relative; /* BẮT BUỘC để bảng dropdown neo đúng vị trí */
+  position: relative; 
 }
 
-/* Thêm mới: CSS cho Logo Web Socket Whiteboard */
+
 .logo-container {
   display: flex;
   align-items: center;
   margin-right: 16px;
   margin-left: 4px;
-  color: #0b57d0; /* Màu xanh dương giống Google/Windows */
+  color: #0b57d0; 
 }
 
 .app-logo {
@@ -44,7 +44,7 @@
   background-color: #f0f0f0;
 }
 
-/* --- BẢNG DROPDOWN --- */
+
 .dropdown-content {
   position: absolute;
   top: calc(100% + 5px);
@@ -53,7 +53,7 @@
   border: 1px solid #000000; 
   border-radius: 6px;
   box-shadow: 0 8px 16px rgba(0,0,0,0.15);
-  min-width: 160px; /* Thu hẹp lại vì đã bỏ phím tắt */
+  min-width: 160px; 
   padding: 6px 0;
   z-index: 100;
 }
@@ -123,13 +123,11 @@
   cursor: default;
 }
 
-/* =========================================
-   GIAO DIỆN MODAL CHUẨN WINDOWS 11 PAINT
-   ========================================= */
+
 .modal-overlay {
   position: fixed;
   top: 0; left: 0; width: 100vw; height: 100vh;
-  background: rgba(255, 255, 255, 0.4); /* Nền mờ sáng đặc trưng của Win 11 */
+  background: rgba(255, 255, 255, 0.4); 
   display: flex;
   justify-content: center;
   align-items: center;
@@ -140,8 +138,8 @@
 .modal-box {
   background: #ffffff;
   padding: 32px;
-  border-radius: 8px; /* Bo góc mềm mại vừa phải */
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12); /* Đổ bóng nhẹ nhàng */
+  border-radius: 8px; 
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12); 
   width: 480px;
   position: relative;
   animation: modalFadeIn 0.15s ease-out;
@@ -153,7 +151,7 @@
   to { opacity: 1; transform: scale(1); }
 }
 
-/* Nút X ở góc trên bên phải */
+
 .modal-close {
   position: absolute;
   top: 16px;
@@ -171,7 +169,7 @@
 
 .modal-title {
   margin: 8px 0 16px 0;
-  font-size: 20px; /* Chữ tiêu đề vừa phải */
+  font-size: 20px; 
   color: #000000;
   font-weight: 600;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -184,16 +182,16 @@
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
-/* Khu vực nút bấm: Chia đều chiều ngang */
+
 .modal-buttons {
   display: flex;
   justify-content: space-between;
   gap: 8px;
 }
 
-/* Các nút bấm có kích thước bằng nhau */
+
 .modal-btn {
-  flex: 1; /* Chia đều độ rộng 3 nút */
+  flex: 1; 
   padding: 10px 20px;
   border-radius: 4px;
   font-size: 15px;
@@ -202,7 +200,7 @@
   transition: all 0.1s;
 }
 
-/* Nút Lưu: Xanh dương chuẩn Win 11 */
+
 .btn-primary { 
   background: #005fb8; 
   color: white; 
@@ -212,7 +210,7 @@
   background: #0053a0; 
 }
 
-/* Nút Không lưu & Hủy: Nền trắng, viền xám */
+
 .btn-secondary { 
   background: #ffffff; 
   color: #000000; 
@@ -223,7 +221,7 @@
 }
 
 
-/* --- CSS CHO DANH SÁCH NGƯỜI DÙNG ONLINE --- */
+
 .online-avatar-wrapper {
   position: relative;
   display: flex;
@@ -249,18 +247,18 @@
   font-size: 12px;
   font-weight: bold;
   text-transform: uppercase;
-  border: 2px solid #ffffff; /* Viền trắng đẹp giống profile */
-  box-shadow: 0 2px 4px rgba(0,0,0,0.15); /* Đổ bóng nhẹ làm nổi bật */
+  border: 2px solid #ffffff; 
+  box-shadow: 0 2px 4px rgba(0,0,0,0.15); 
   text-shadow: 0 1px 2px rgba(0,0,0,0.2);
 }
 
-/* Hiệu ứng nổi bật thêm cho avatar của chính mình (nếu thích) */
+
 .online-avatar-wrapper.is-me .online-avatar-circle {
   border: 2px solid #ffffff; 
-  box-shadow: 0 0 0 2px #4f46e5, 0 2px 4px rgba(0,0,0,0.2); /* Viền kép: Trắng + Xanh */
+  box-shadow: 0 0 0 2px #4f46e5, 0 2px 4px rgba(0,0,0,0.2); 
 }
 
-/* Vương miện Admin trên avatar nhỏ */
+
 .admin-crown-badge {
   position: absolute;
   top: -8px;

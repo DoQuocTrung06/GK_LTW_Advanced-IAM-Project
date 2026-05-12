@@ -1,12 +1,12 @@
-/* Nền tối làm mờ phía sau Modal */
+
 .modal-overlay {
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(15, 23, 42, 0.6); /* Màu tối sang trọng */
-  backdrop-filter: blur(4px); /* Hiệu ứng mờ nền giống Apple/Google */
+  background-color: rgba(15, 23, 42, 0.6); 
+  backdrop-filter: blur(4px); 
   display: flex;
   justify-content: center;
   align-items: center;
@@ -14,7 +14,7 @@
   animation: fadeIn 0.2s ease-out;
 }
 
-/* Khung nội dung Modal */
+
 .modal-box {
   background: #ffffff;
   padding: 24px;
@@ -26,7 +26,7 @@
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
 }
 
-/* Ô nhập Email */
+
 .modal-box form input {
   flex: 1;
   padding: 10px 14px;
@@ -39,10 +39,10 @@
 
 .modal-box form input:focus {
   border-color: #4f46e5;
-  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.2); /* Viền sáng khi click vào */
+  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.2); 
 }
 
-/* Nút Invite */
+
 .modal-box form button {
   padding: 10px 20px;
   background-color: #4f46e5;
@@ -59,7 +59,7 @@
   background-color: #4338ca;
 }
 
-/* Select Box chọn quyền */
+
 .modal-box select {
   padding: 8px 12px;
   border: 1px solid transparent;
@@ -81,7 +81,7 @@
   border-color: #cbd5e1;
 }
 
-/* Nút Copy Link và Done */
+
 .copy-btn, .done-btn {
   padding: 8px 16px;
   border-radius: 20px;
@@ -114,7 +114,7 @@
   background-color: #e2e8f0;
 }
 
-/* Animations */
+
 @keyframes fadeIn {
   from { opacity: 0; }
   to { opacity: 1; }

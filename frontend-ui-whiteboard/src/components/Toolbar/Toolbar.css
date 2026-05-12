@@ -18,14 +18,14 @@
   border-radius:20px;
 }
 
-/* Pen */
+
 .brush-stroke.pen{
   height:4px;
   background:black;
   border-radius:50px;
 }
 
-/* Pencil */
+
 .brush-stroke.pencil{
   height:3px;
   background:
@@ -38,18 +38,18 @@
     );
 }
 
-/* Highlighter */
+
 .brush-stroke.highlighter{
   height:12px;
   background: rgba(0,0,0,.25);
 }
-/* Đảm bảo Toolbar luôn nổi trên bảng vẽ */
+
 .toolbar-container {
   position: relative;
-  z-index: 999999; /* Số rất lớn để luôn nằm trên */
+  z-index: 999999;
 }
 
-/* Menu sổ xuống của Brush */
+
 .brush-dropdown {
   position: absolute;
   top: 100%;
@@ -57,18 +57,18 @@
   background-color: white;
   border: 1px solid #ccc;
   box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-  z-index: 10000001; /* Phải cao hơn cả toolbar và board */
+  z-index: 10000001; 
   display: flex;
   flex-direction: column;
   min-width: 120px;
 }
 
-/* Toolbar.css - English & Bigger Size */
+
 .ribbon-container {
   display: flex;
   align-items: stretch;
   background-color: #f3f3f3;
-  padding: 12px 16px; /* Tăng padding để to hơn */
+  padding: 12px 16px; 
   border-bottom: 1px solid #d1d1d1;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   user-select: none;
@@ -81,7 +81,7 @@
   flex-direction: column;
   align-items: center;
   justify-content: space-between;
-  padding: 0 20px; /* Rộng hơn xíu */
+  padding: 0 20px; 
   position: relative;
   
 }
@@ -99,13 +99,13 @@
 .ribbon-section:last-child::after { display: none; }
 
 .section-label {
-  font-size: 13px; /* Chữ to hơn */
+  font-size: 13px;
   color: #606060;
   margin-top: 10px;
   text-align: center;
 }
 
-/* Lưới Tools */
+
 .tools-grid {
   display: grid;
   grid-template-rows: repeat(2, auto); 
@@ -117,7 +117,7 @@
   background: transparent;
   border: none;
   border-radius: 6px;
-  padding: 8px; /* Tăng padding */
+  padding: 8px; 
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -131,11 +131,11 @@
   border: 1px solid #99d1ff;
 }
 .tool-btn svg {
-  width: 24px; /* Icon to hơn */
+  width: 24px; 
   height: 24px;
 }
 
-/* Brushes */
+
 .brush-container {
   display: flex;
   flex-direction: column;
@@ -154,7 +154,7 @@
   border: 1px solid #99d1ff;
 }
 .big-tool-btn svg { 
-  width: 36px; /* Icon bút to hơn */
+  width: 36px; 
   height: 36px; 
   color: #333; 
 }
@@ -165,7 +165,7 @@
   color: #606060;
 }
 
-/* Shapes Panel */
+
 .shapes-panel {
   display: grid;
   grid-template-columns: repeat(6, 1fr);
@@ -192,7 +192,7 @@
 .shape-btn:hover { background-color: #e5e5e5; border: 1px solid #ccc; }
 .shape-btn svg { width: 18px; height: 18px; stroke: #333; fill: none; }
 
-/* Size */
+
 .size-container {
   display: flex;
   flex-direction: column;
@@ -214,7 +214,7 @@
 }
 .size-preview { border-radius: 50%; }
 
-/* Colors */
+
 .colors-container { display: flex; align-items: center; gap: 14px; }
 .active-color-box {
   display: flex; flex-direction: column; align-items: center; justify-content: center;

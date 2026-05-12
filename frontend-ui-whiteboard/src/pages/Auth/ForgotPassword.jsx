@@ -8,7 +8,7 @@ function ForgotPassword() {
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
   
-  // Trạng thái loading và lỗi
+  
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -16,7 +16,7 @@ function ForgotPassword() {
     e.preventDefault();
     if (isLoading) return;
     
-    // Kiểm tra định dạng email cơ bản
+    
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
       setError('Invalid email format.');
@@ -38,7 +38,7 @@ function ForgotPassword() {
 
       if (response.ok) {
         toast.success("Reset code sent! Please check your email.");
-        // TRUYỀN NGẦM: Đẩy sang VerifyOtp kèm biến 'flow' để phân luồng
+        
         navigate('/verify-otp', { state: { email: email, flow: 'FORGOT_PASSWORD' } });
       } else {
         setError(data.message || 'We could not find an account with that email address.');

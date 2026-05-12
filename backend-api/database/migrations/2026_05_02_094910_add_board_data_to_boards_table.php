@@ -9,7 +9,6 @@ return new class extends Migration
     public function up()
     {
         Schema::table('boards', function (Blueprint $table) {
-            // Thêm cột board_data kiểu longText (để chứa mảng JSON siêu dài), cho phép null ban đầu
             $table->longText('board_data')->nullable()->after('visibility');
         });
     }

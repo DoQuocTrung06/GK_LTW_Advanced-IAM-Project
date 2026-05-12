@@ -9,14 +9,14 @@ export const useBoardTools = ({
   
   const hasUnsavedChanges = lines !== lastSavedData.lines || bgImage !== lastSavedData.bgImage;
 
-  // Broadcast helper
+  
   const broadcastAction = (actionData) => {
     const token = localStorage.getItem('auth_token');
     if (token && boardData?.id && boardData.id !== 'temp') {
       const headers = {
         'Content-Type': 'application/json',
         'Accept': 'application/json',
-        'Authorization': `Bearer ${token}` // Token đã được kẹp sẵn rất chuẩn
+        'Authorization': `Bearer ${token}` 
       };
       if (echo.socketId()) headers['X-Socket-ID'] = echo.socketId();
 

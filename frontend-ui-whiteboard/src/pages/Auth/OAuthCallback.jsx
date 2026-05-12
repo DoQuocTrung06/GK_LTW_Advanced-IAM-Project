@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { MdAutoAwesome } from 'react-icons/md';
-import './Auth.css'; // Tái sử dụng lại CSS form đăng nhập
+import './Auth.css'; 
 
 
 const OAuthCallback = () => {
@@ -12,7 +12,7 @@ const OAuthCallback = () => {
     useEffect(() => {
         const searchParams = new URLSearchParams(location.search);
         const token = searchParams.get('token');
-        const userBase64 = searchParams.get('user'); // Lấy chuỗi user từ URL
+        const userBase64 = searchParams.get('user'); 
         const error = searchParams.get('error');
 
         if (error) {
@@ -22,10 +22,10 @@ const OAuthCallback = () => {
         }
 
         if (token) {
-            // 1. Lưu token
+            
             localStorage.setItem('auth_token', token);
             
-            // 2. GIẢI MÃ VÀ LƯU THÔNG TIN USER
+            
             if (userBase64) {
                 const userObj = JSON.parse(atob(userBase64));
                 localStorage.setItem('user', JSON.stringify(userObj));
@@ -48,7 +48,7 @@ const OAuthCallback = () => {
     return (
         <div className="auth-container">
             <div className="auth-card" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                {/* Tái sử dụng logo có sẵn để làm màn hình chờ */}
+                
                 <div className="auth-logo" style={{ animation: 'pulse 1.5s infinite' }}>
                     <MdAutoAwesome size={32} />
                 </div>
@@ -56,7 +56,7 @@ const OAuthCallback = () => {
                 <p className="auth-subtitle">Please wait while we log you in securely.</p>
             </div>
 
-            {/* Thêm keyframes trực tiếp hoặc bỏ vào Auth.css đều được */}
+            
             <style>{`
                 @keyframes pulse {
                     0% { transform: scale(0.95); opacity: 0.8; }

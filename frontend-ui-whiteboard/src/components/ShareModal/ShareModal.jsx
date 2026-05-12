@@ -7,7 +7,6 @@ function ShareModal({ isOpen, onClose, boardId, currentVisibility, onVisibilityU
   const [visibility, setVisibility] = useState(currentVisibility || 'private');
   const [inviteEmail, setInviteEmail] = useState('');
   
-  // 1. THÊM STATE: Lưu quyền của người chuẩn bị được mời (Mặc định là viewer cho an toàn)
   const [inviteRole, setInviteRole] = useState('viewer'); 
   
   const [isLoading, setIsLoading] = useState(false);
@@ -43,7 +42,7 @@ function ShareModal({ isOpen, onClose, boardId, currentVisibility, onVisibilityU
           'Accept': 'application/json',
           'Authorization': `Bearer ${token}`
         },
-        // 2. SỬA CHỖ NÀY: Kẹp thêm cái role gửi xuống Backend
+        
         body: JSON.stringify({ email: inviteEmail, role: inviteRole }) 
       });
 
@@ -51,8 +50,8 @@ function ShareModal({ isOpen, onClose, boardId, currentVisibility, onVisibilityU
 
       if (response.ok) {
         toast.success(`Invited ${inviteEmail} as ${inviteRole}!`); 
-        setInviteEmail(''); // Xóa ô email đi để mời người khác
-        setInviteRole('viewer'); // Reset lại quyền về mặc định
+        setInviteEmail(''); 
+        setInviteRole('viewer'); 
       } else {
         toast.error(data.message || "Could not invite this email."); 
       }
@@ -65,7 +64,7 @@ function ShareModal({ isOpen, onClose, boardId, currentVisibility, onVisibilityU
   };
 
   const handleVisibilityChange = async (e) => {
-    // ... (Code phần này giữ nguyên như cũ của bạn) ...
+    
     const newVisibility = e.target.value;
     const previousVisibility = visibility;
     
@@ -113,7 +112,7 @@ function ShareModal({ isOpen, onClose, boardId, currentVisibility, onVisibilityU
           </button>
         </div>
 
-        {/* 3. NÂNG CẤP GIAO DIỆN FORM: Thêm ô Select Role nằm chen giữa Email và nút Invite */}
+        
         <form onSubmit={handleInvite} style={{ display: 'flex', gap: '8px', marginBottom: '24px' }}>
           <input 
             type="email" 

@@ -7,7 +7,6 @@ function Toolbar({ tool, setTool, color, setColor, brushSize, setBrushSize, onCl
   const row1Colors = ['#000000', '#7f7f7f', '#880015', '#ed1c24', '#ff7f27', '#fff200', '#22b14c', '#00a2e8', '#3f48cc', '#a349a4'];
   const row2Colors = ['#ffffff', '#c3c3c3', '#b97a57', '#ffaec9', '#ffc90e', '#efe4b0', '#b5e61d', '#99d9ea', '#7092be', '#c8bfe7'];
 
-  // Đã thêm onClick cho các shapes
   const shapes = [
     { id: 'line', icon: <line x1="4" y1="20" x2="20" y2="4"/> },
     { id: 'curve', icon: <path d="M4 12 Q 12 2 20 12"/> },
@@ -32,7 +31,7 @@ function Toolbar({ tool, setTool, color, setColor, brushSize, setBrushSize, onCl
   return (
     <div className="ribbon-container">
       
-      {/* 1. TOOLS */}
+      
       <div className="ribbon-section">
         <div className="tools-grid">
 
@@ -70,9 +69,9 @@ function Toolbar({ tool, setTool, color, setColor, brushSize, setBrushSize, onCl
         <span className="section-label">Tools</span>
       </div>
 
-      {/* 2. BRUSHES */}
+     
       <div className="ribbon-section">
-        {/* Container phải có relative để menu con định vị chính xác */}
+       
         <div 
           className={`brush-container ${tool === 'pen' || tool === 'pencil' || tool === 'highlighter' ? 'active' : ''}`} 
           onClick={() => setShowBrushMenu(!showBrushMenu)}
@@ -83,7 +82,7 @@ function Toolbar({ tool, setTool, color, setColor, brushSize, setBrushSize, onCl
           </div>
           <svg className="dropdown-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
           
-          {/* BRUSH MENU DROPDOWN */}
+         
           {showBrushMenu && (
             <div className="brush-dropdown">
 
@@ -129,7 +128,7 @@ function Toolbar({ tool, setTool, color, setColor, brushSize, setBrushSize, onCl
         <span className="section-label">Brushes</span>
       </div>
 
-      {/* 3. SHAPES (Bảng hình khối) */}
+      
       <div className="ribbon-section">
         <div className="shapes-panel">
           {shapes.map(shape => (
@@ -147,7 +146,7 @@ function Toolbar({ tool, setTool, color, setColor, brushSize, setBrushSize, onCl
         <span className="section-label">Shapes</span>
       </div>
 
-      {/* 4. SIZE */}
+      
       <div className="ribbon-section">
         <div className="size-container">
           <input 
@@ -170,7 +169,7 @@ function Toolbar({ tool, setTool, color, setColor, brushSize, setBrushSize, onCl
         <span className="section-label">Size</span>
       </div>
 
-      {/* 5. COLORS */}
+      
       <div className="ribbon-section" style={{ flexDirection: 'row' }}>
         <div className="colors-container">
           

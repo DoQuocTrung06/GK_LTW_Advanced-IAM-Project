@@ -1,6 +1,6 @@
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 
-// Import Pages
+
 import Whiteboard from './pages/Whiteboard/Whiteboard';
 import Login from './pages/Auth/Login';
 import Register from './pages/Auth/Register';
@@ -12,23 +12,20 @@ import 'react-toastify/dist/ReactToastify.css';
 import OAuthCallback from './pages/Auth/OAuthCallback';
 
 
-// NGƯỜI BẢO VỆ: Nếu chưa có token, đá về trang login và nhớ cái link định vào
+
 const ProtectedRoute = ({ children }) => {
   const token = localStorage.getItem('auth_token');
   const location = useLocation();
 
   if (!token) {
-    // Lưu lại cái link hiện tại (VD: /board/14) để sau khi login quay lại đúng đây
+    
     localStorage.setItem('redirect_after_login', location.pathname);
     return <Navigate to="/login" replace />;
   }
   return children;
 };
 
-/**
- * Hàng rào GuestRoute (Chỉ dành cho khách chưa đăng nhập)
- * Nếu đã có auth_token (tức là đã đăng nhập), tự động đá văng về trang chủ (/)
- */
+
 const GuestRoute = ({ children }) => {
   const token = localStorage.getItem('auth_token'); 
   
@@ -42,21 +39,21 @@ function App() {
   return (
     <>
       <Routes>
-      {/* 1. Trang chủ: Tự động tạo phòng mới */}
+      
       <Route path="/" element={
           <ProtectedRoute>
             <Whiteboard />
           </ProtectedRoute>
       } />
       
-      {/* THÊM MỚI: Mở cửa cho link chia sẻ có chứa ID */}
+     
       <Route path="/board/:id" element={
           <ProtectedRoute>
             <Whiteboard />
           </ProtectedRoute>
       } />
       
-      {/* 2. Các trang Auth: Được bọc bởi GuestRoute để chặn người đã đăng nhập */}
+      
       <Route path="/login" element={
         <GuestRoute>
           <Login />
@@ -86,7 +83,7 @@ function App() {
         </GuestRoute>
       } />
       
-      {/* Trang 404: Not Found (Trả lại code gốc của bạn) */}
+      
       <Route path="*" element={
         <div style={{ textAlign: 'center', marginTop: '100px', fontFamily: 'Arial' }}>
           <h1 style={{ fontSize: '72px', color: '#1e293b' }}>404</h1>

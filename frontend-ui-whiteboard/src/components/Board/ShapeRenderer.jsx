@@ -23,17 +23,16 @@ function ShapeRenderer({ shape, currentTool, onSelect, onChange, onDragStart, on
     name: 'canvas-object',
     draggable: currentTool === 'select', 
     
-    // ĐÃ FIX: Lớp viền tàng hình giúp dễ click trúng hình hơn (tối thiểu 15px)
+    
     hitStrokeWidth: shape.size ? Math.max(15, shape.size) : 15,
 
-    // ĐÃ FIX: Đổi từ onClick sang onMouseDown để bắt cực nhạy
     onMouseDown: (e) => { 
       if (currentTool === 'select') {
         e.cancelBubble = true; 
         onSelect(shape.id);
       }
     },
-    // ĐÃ FIX: Đổi từ onTap sang onTouchStart cho điện thoại cảm ứng
+    
     onTouchStart: (e) => { 
       if (currentTool === 'select') {
         e.cancelBubble = true;
@@ -41,7 +40,7 @@ function ShapeRenderer({ shape, currentTool, onSelect, onChange, onDragStart, on
       }
     },
     
-    // ✅ Dùng prop từ Board nếu có, fallback về onChange đơn giản
+    
     onDragStart: onDragStart || undefined,
     onDragMove: onDragMove || undefined,
     onDragEnd: onDragEnd || ((e) => {

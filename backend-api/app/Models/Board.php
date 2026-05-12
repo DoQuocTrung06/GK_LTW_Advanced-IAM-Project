@@ -15,13 +15,13 @@ class Board extends Model
         'board_data' => 'array',
     ];
 
-    // Mối quan hệ: Một bảng vẽ thuộc về 1 người tạo (User)
+   
     public function owner()
     {
         return $this->belongsTo(User::class, 'owner_id');
     }
 
-    // Mối quan hệ: Một bảng vẽ có nhiều thư mời
+   
     public function invites()
     {
         return $this->hasMany(BoardInvite::class);

@@ -1,4 +1,4 @@
-/* Auth.css - Modern Creative Style */
+
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
 :root {
@@ -16,7 +16,6 @@
   align-items: center;
   justify-content: center;
   background-color: var(--bg-auth);
-  /* Hiệu ứng gradient chìm nhẹ phía sau */
   background-image: 
     radial-gradient(at 0% 0%, rgba(79, 70, 229, 0.08) 0px, transparent 50%),
     radial-gradient(at 100% 100%, rgba(79, 70, 229, 0.05) 0px, transparent 50%);
@@ -60,7 +59,7 @@
   margin-bottom: 32px;
 }
 
-/* Form Styling */
+
 .form-group {
   margin-bottom: 20px;
 }
@@ -115,7 +114,7 @@
   padding: 4px;
 }
 
-/* Buttons */
+
 .btn-auth-primary {
   width: 100%;
   padding: 13px;
@@ -158,7 +157,7 @@
   margin-top: 8px;
 }
 
-/* --- Bổ sung cho Social Login --- */
+
 .auth-divider {
   display: flex;
   align-items: center;

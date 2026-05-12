@@ -1,4 +1,3 @@
-// src/components/Board/LiveCursors.jsx
 import { Layer, Group, Path, Rect, Text } from 'react-konva';
 import { getUserColor } from './utils/userColors';
 
@@ -6,12 +5,11 @@ const LiveCursors = ({ cursors }) => {
   return (
     <Layer name="cursors-layer">
       {cursors && Object.entries(cursors).map(([userId, cursor]) => {
-        // Lấy màu đồng bộ với Avatar
+        
         const userColor = getUserColor(userId);
 
         return (
           <Group key={userId} x={cursor.x} y={cursor.y}>
-            {/* Hình con trỏ chuột */}
             <Path
               data="M 0 0 L 0 16 L 4.5 12.5 L 8.5 20 L 10.5 19 L 6.5 11.5 L 12 11.5 Z"
               fill={userColor}
@@ -22,7 +20,6 @@ const LiveCursors = ({ cursors }) => {
               shadowOffsetX={1}
               shadowOffsetY={1}
             />
-            {/* Nền tên người dùng */}
             <Rect 
               x={15} y={15} 
               width={cursor.name.length * 8 + 10} 
@@ -30,7 +27,6 @@ const LiveCursors = ({ cursors }) => {
               fill={userColor} 
               cornerRadius={4} 
             />
-            {/* Chữ tên người dùng */}
             <Text 
               x={20} y={20} 
               text={cursor.name} 

@@ -18,10 +18,8 @@ function Register() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   
-  // Trạng thái cho Form Validation (Lỗi ở Frontend)
   const [formError, setFormError] = useState(''); 
   
-  // THÊM: Trạng thái cho API (Loading và Lỗi từ Backend)
   const [isLoading, setIsLoading] = useState(false);
   const [apiError, setApiError] = useState('');
 
@@ -45,10 +43,10 @@ function Register() {
       return;
     }
 
-    // Bắt đầu gọi API
+    
     setIsLoading(true);
     try {
-      // 1. Dùng axios.post để gửi dữ liệu đăng ký
+      
       const response = await axios.post(`${import.meta.env.VITE_API_URL}/register`, {
           name: formData.name,
           email: formData.email,
@@ -56,14 +54,14 @@ function Register() {
           password_confirmation: formData.confirmPassword
       });
 
-      // 2. QUAN TRỌNG: Nếu đăng ký thành công (Laravel đã gửi mail OTP ngầm)
+      
       if (response.status === 201 || response.status === 200) {
         toast.success("Registration successful! Please check your email for the OTP.");
-        // Chuyển sang trang nhập OTP và "đèo" theo cái email người dùng vừa nhập
+        
         navigate('/verify-otp', { state: { email: formData.email } });
       }
     } catch (err) {
-      // Axios trả về lỗi trong err.response.data
+      
       setApiError(err.response?.data?.message || 'Registration failed. Please try again.');
     } finally {
       setIsLoading(false);
@@ -78,14 +76,14 @@ function Register() {
         <p className="auth-subtitle">Join us to visualize your ideas</p>
 
         <form onSubmit={handleRegister}>
-          {/* Hiển thị lỗi Frontend hoặc Backend */}
+          
           {(formError || apiError) && (
             <div style={{ color: '#ef4444', fontSize: '13px', marginBottom: '16px', textAlign: 'center' }}>
               {formError || apiError}
             </div>
           )}
 
-          {/* Name Group */}
+          
           <div className="form-group">
             <label className="form-label">Full Name</label>
             <div className="input-wrapper">
@@ -100,7 +98,7 @@ function Register() {
             </div>
           </div>
 
-          {/* Email Group */}
+         
           <div className="form-group">
             <label className="form-label">Email address</label>
             <div className="input-wrapper">
@@ -115,7 +113,7 @@ function Register() {
             </div>
           </div>
 
-          {/* Password Group */}
+          
           <div className="form-group">
             <label className="form-label">Password</label>
             <div className="input-wrapper">
@@ -133,7 +131,7 @@ function Register() {
             </div>
           </div>
 
-          {/* Confirm Password */}
+          
           <div className="form-group">
             <label className="form-label">Confirm Password</label>
             <div className="input-wrapper">

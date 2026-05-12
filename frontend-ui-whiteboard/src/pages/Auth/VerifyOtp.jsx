@@ -10,7 +10,7 @@ function VerifyOtp() {
   const navigate = useNavigate();
   const location = useLocation();
   
-  // Lấy dữ liệu ẩn danh, nếu không có flow thì mặc định là từ lúc đăng ký (REGISTER)
+  
   const email = location.state?.email || ''; 
   const flow = location.state?.flow || 'REGISTER'; 
 
@@ -18,7 +18,7 @@ function VerifyOtp() {
   const [isLoading, setIsLoading] = useState(false);
   const [apiError, setApiError] = useState('');
 
-  // Nếu truy cập trái phép không có email, đẩy về trang login
+  
   if (!email) {
     navigate('/login');
     return null;
@@ -38,12 +38,12 @@ function VerifyOtp() {
       if (response.status === 200) {
         toast.success('Verification successful!');
         
-        // ĐIỀU HƯỚNG DỰA VÀO LUỒNG (FLOW)
+        
         if (flow === 'FORGOT_PASSWORD') {
-            // Chuyển sang trang đặt lại mật khẩu, mang theo OTP ngầm
+            
             navigate('/reset-password', { state: { email: email, otp: otp } });
         } else {
-            // Đăng ký thành công thì về thẳng Login
+            
             setTimeout(() => navigate('/login'), 2000); 
         }
       }
@@ -57,7 +57,7 @@ function VerifyOtp() {
   const handleResendOtp = async () => {
     setIsLoading(true); 
     try {
-      // SỬA LỖI LOGIC TẠI ĐÂY: Nếu là luồng quên MK thì phải gọi API forgot-password để lấy OTP mới
+      
       const endpoint = flow === 'FORGOT_PASSWORD' 
           ? `${import.meta.env.VITE_API_URL}/forgot-password`
           : `${import.meta.env.VITE_API_URL}/resend-otp`;
@@ -132,7 +132,7 @@ function VerifyOtp() {
             </button>
             
             <br />
-            {/* Chỉ hiện nút Back to Register nếu không phải là luồng Forgot Password */}
+            
             {flow !== 'FORGOT_PASSWORD' && (
               <button 
                 type="button"

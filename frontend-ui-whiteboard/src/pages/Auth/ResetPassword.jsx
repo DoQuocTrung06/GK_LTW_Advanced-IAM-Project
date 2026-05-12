@@ -13,7 +13,7 @@ function ResetPassword() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Lấy email và otp từ state ẩn do trang VerifyOtp truyền sang
+ 
   const email = location.state?.email || '';
   const otp = location.state?.otp || '';
 
@@ -30,12 +30,12 @@ function ResetPassword() {
   const [isLoading, setIsLoading] = useState(false);
   const [apiError, setApiError] = useState('');
 
-  // Kiểm tra tính hợp lệ của mật khẩu
+  
   const validatePassword = (password) => {
     return /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/.test(password);
   };
   
-  // BẢO VỆ: Nếu ai đó cố tình vào thẳng link này mà không qua OTP, đá về trang forgot
+  
   if (!email || !otp) {
       navigate('/forgot-password');
       return null;
@@ -67,8 +67,8 @@ function ResetPassword() {
             'Accept': 'application/json'
           },
           body: JSON.stringify({
-            email: email, // Lấy ngầm
-            otp: otp,     // Lấy ngầm từ VerifyOtp truyền sang
+            email: email, 
+            otp: otp,     
             password: formData.password,
             password_confirmation: formData.confirmPassword 
           })
@@ -78,7 +78,7 @@ function ResetPassword() {
 
         if (response.ok) {
           setIsSuccess(true);
-          // Tự động nhảy về trang Login sau 3 giây
+          
           setTimeout(() => navigate('/login', { replace: true }), 3000);
         } else {
           setApiError(data.message || 'Invalid or expired session. Please try again.');

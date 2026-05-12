@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
-import echo from '../../../echo'; // Đường dẫn trỏ về file echo.js ở thư mục src
+import echo from '../../../echo'; 
 
 export const useBoardSync = (id, lines, setLines, setRedoStack, setBgImage) => {
   const navigate = useNavigate();
@@ -11,7 +11,7 @@ export const useBoardSync = (id, lines, setLines, setRedoStack, setBgImage) => {
   const [cursors, setCursors] = useState({});
   const lastFetchedId = useRef(null);
 
-  // 1. Lấy thông tin user
+  
   useEffect(() => {
     const savedUser = localStorage.getItem('user');
     if (savedUser) {
@@ -20,7 +20,7 @@ export const useBoardSync = (id, lines, setLines, setRedoStack, setBgImage) => {
     }
   }, []);
 
-  // 2. Fetch API khởi tạo phòng
+  
   useEffect(() => {
     const fetchBoard = async () => {
       const currentIdToFetch = id || 'new';
@@ -39,7 +39,7 @@ export const useBoardSync = (id, lines, setLines, setRedoStack, setBgImage) => {
           headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' }
         });
 
-        // Xử lý lỗi 401
+        
         if (response.status === 401) {
           toast.warning("Session expired or unauthorized. Please login.");
           localStorage.removeItem('auth_token');
@@ -47,10 +47,9 @@ export const useBoardSync = (id, lines, setLines, setRedoStack, setBgImage) => {
           return;
         }
 
-        // Xử lý lỗi 403
+       
         if (response.status === 403) {
           toast.error("Access denied. You don't have permission to view this board.");
-          // SỬA DÒNG DƯỚI ĐÂY: Đổi '/' thành '/404'
           navigate('/404'); 
           return;
         }
@@ -64,7 +63,7 @@ export const useBoardSync = (id, lines, setLines, setRedoStack, setBgImage) => {
         const data = await response.json();
         setBoardData(data);
 
-        // Load nét vẽ cũ
+        
         if (data.board_data) {
           try {
             let savedLines = data.board_data;
@@ -84,15 +83,12 @@ export const useBoardSync = (id, lines, setLines, setRedoStack, setBgImage) => {
     fetchBoard();
   }, [id, navigate, setLines]);
 
-  // 3. Kết nối Socket Realtime
+ 
   useEffect(() => {
     const token = localStorage.getItem('auth_token');
     
-    // Đảm bảo có token và đã khởi tạo xong board thì mới join
     if (!token || !currentUser || !boardData || boardData.id === 'temp') return;
     
-
-    // Đã xóa đoạn echo.connector.pusher.config.auth... cũ đi vì không cần thiết nữa
     
 
     const channel = echo.join(`board.${boardData.id}`)
@@ -178,7 +174,7 @@ export const useBoardSync = (id, lines, setLines, setRedoStack, setBgImage) => {
     if (!boardData?.id || boardData.id === 'temp') return;
     const autoSaveTimer = setTimeout(() => {
       const token = localStorage.getItem('auth_token');
-      if(!token) return; // Kiểm tra thêm token trước khi save
+      if(!token) return; 
       
       fetch(`${import.meta.env.VITE_API_URL}/boards/${boardData.id}/save-data`, {
         method: 'PUT',
@@ -193,7 +189,7 @@ export const useBoardSync = (id, lines, setLines, setRedoStack, setBgImage) => {
     return () => clearTimeout(autoSaveTimer);
   }, [lines, boardData?.id]);
 
-  // THÊM HÀM NÀY: Gửi tọa độ của mình cho người khác
+
   const broadcastCursor = (x, y) => {
     if (!currentUser || !boardData || boardData.id === 'temp') return;
     

@@ -6,7 +6,7 @@ import {
     MdLock, 
     MdVisibility, 
     MdVisibilityOff,
-    MdSecurity // Thêm icon bảo mật
+    MdSecurity 
 } from "react-icons/md";
 import './Auth.css';
 import { toast } from 'react-toastify';
@@ -17,21 +17,19 @@ function Login() {
     const navigate = useNavigate();
     const location = useLocation();
     
-    // State quản lý bước đăng nhập: 'login' (nhập email/pass) hoặc '2fa' (nhập mã 6 số)
+    
     const [step, setStep] = useState('login'); 
     const [loginSessionId, setLoginSessionId] = useState('');
 
     useEffect(() => {
-        // Đọc các tham số trên thanh URL
         const queryParams = new URLSearchParams(location.search);
         
-        // Nếu Backend báo là cần nhập 2FA
         if (queryParams.get('requires_2fa') === 'true') {
-            setStep('2fa'); // Chuyển sang form nhập 6 số
-            setLoginSessionId(queryParams.get('session_id')); // Lưu ID lại
+            setStep('2fa'); 
+            setLoginSessionId(queryParams.get('session_id')); 
             toast.info("Please enter your 2FA verification code.");
         } 
-        // Nếu Đăng nhập Google thất bại
+        
         else if (queryParams.get('error') === 'Google_Auth_Failed') {
             setError("Google Authentication Failed. Please try again.");
         }
@@ -54,7 +52,7 @@ function Login() {
         window.location.href = `${import.meta.env.VITE_API_URL}/auth/google`;
     };
 
-    // Hàm dùng chung để xử lý khi đăng nhập thành công hoàn toàn (lưu token, chuyển trang)
+    
     const finishLogin = (data) => {
         localStorage.setItem('auth_token', data.token);
         localStorage.setItem('user', JSON.stringify(data.user));
@@ -69,7 +67,7 @@ function Login() {
         }
     };
 
-    // 1. Xử lý bước Submit Email/Password
+    
     const handleLogin = async (e) => {
         e.preventDefault();
         setIsLoading(true);
@@ -88,13 +86,13 @@ function Login() {
             const data = await response.json();
 
             if (response.ok) {
-                // Kiểm tra xem backend có yêu cầu 2FA không
+                
                 if (data.status === 'requires_2fa') {
-                    setStep('2fa'); // Chuyển sang giao diện nhập mã 2FA
-                    setLoginSessionId(data.login_session_id); // Lưu lại ID phiên đăng nhập
+                    setStep('2fa'); 
+                    setLoginSessionId(data.login_session_id); 
                     toast.info("Please enter your 2FA verification code.");
                 } else {
-                    // Nếu user không bật 2FA, đăng nhập thẳng luôn
+                    
                     finishLogin(data);
                 }
             } else {
@@ -107,7 +105,7 @@ function Login() {
         }
     };
 
-    // 2. Xử lý bước Submit Mã 6 số 2FA
+    
     const handleVerify2FA = async (e) => {
         e.preventDefault();
         setIsLoading(true);
@@ -135,7 +133,7 @@ function Login() {
             const data = await response.json();
 
             if (response.ok) {
-                // Nhập đúng mã 2FA -> Đăng nhập thành công
+                
                 finishLogin(data);
             } else {
                 setError(data.message || 'Invalid 2FA code. Please try again.');
@@ -163,7 +161,7 @@ function Login() {
 
                 {error && <div style={{ color: '#ef4444', fontSize: '13px', marginBottom: '16px', textAlign: 'center' }}>{error}</div>}
 
-                {/* --- GIAO DIỆN NHẬP EMAIL/PASSWORD --- */}
+                
                 {step === 'login' && (
                     <form onSubmit={handleLogin}>
                         <div className="form-group">
@@ -212,7 +210,7 @@ function Login() {
                     </form>
                 )}
 
-                {/* --- GIAO DIỆN NHẬP MÃ 2FA --- */}
+                
                 {step === '2fa' && (
                     <form onSubmit={handleVerify2FA}>
                         <div className="form-group">
@@ -224,7 +222,7 @@ function Login() {
                                     placeholder="000000"
                                     required
                                     value={otp}
-                                    onChange={(e) => setOtp(e.target.value.replace(/\D/g, ''))} // Chỉ cho nhập số
+                                    onChange={(e) => setOtp(e.target.value.replace(/\D/g, ''))} 
                                     style={{ textAlign: 'center', letterSpacing: '8px', fontSize: '20px', fontWeight: 'bold' }}
                                 />
                             </div>
@@ -246,7 +244,7 @@ function Login() {
                     </form>
                 )}
 
-                {/* Ẩn phần Login bằng Google nếu đang ở bước nhập 2FA */}
+               
                 {step === 'login' && (
                     <>
                         <div className="auth-divider">
@@ -258,7 +256,7 @@ function Login() {
                             <span>Google</span>
                         </button>
 
-                        {/* NÚT GITHUB MỚI */}
+                        
                         <button 
                             type="button" 
                             onClick={handleGithubLogin} 

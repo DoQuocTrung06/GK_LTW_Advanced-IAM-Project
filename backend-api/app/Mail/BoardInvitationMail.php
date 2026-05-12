@@ -15,15 +15,15 @@ class BoardInvitationMail extends Mailable
 
     public $board;
     public $inviteLink;
-    public $role; // THÊM DÒNG NÀY: Khai báo biến lưu quyền
+    public $role; 
 
-    // THÊM $role VÀO HÀM KHỞI TẠO
+   
     public function __construct(Board $board, $role = 'viewer')
     {
         $this->board = $board;
-        $this->role = $role; // Gán quyền nhận được từ Controller
+        $this->role = $role; 
         
-        // Lấy link từ config đã setup ở Bước 1
+        
         $baseUrl = config('app.frontend_url');
         $this->inviteLink = rtrim($baseUrl, '/') . "/board/" . ($board->board_code ?? $board->id);
     }
@@ -39,7 +39,6 @@ class BoardInvitationMail extends Mailable
     {
         return new Content(
             view: 'emails.board_invite', 
-            // Laravel sẽ tự động truyền các biến public ($board, $inviteLink, $role) sang file View
         );
     }
 

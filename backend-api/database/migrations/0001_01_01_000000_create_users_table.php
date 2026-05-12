@@ -6,9 +6,7 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
+    
     public function up(): void
     {
         Schema::create('users', function (Blueprint $table) {
@@ -16,18 +14,18 @@ return new class extends Migration
             $table->string('name');
             $table->string('email')->unique();
             
-            // MỚI: Thêm Google ID cho OAuth2.0
+            
             $table->string('google_id')->nullable()->unique(); 
             
-            // MỚI: Thêm cột Role để Phân quyền (RBAC). Mặc định là 'member'
+            
             $table->string('role')->default('member'); 
             
             $table->timestamp('email_verified_at')->nullable();
             
-            // SỬA: Cho phép password null vì nếu đăng nhập bằng Google thì không cần mật khẩu
+            
             $table->string('password')->nullable(); 
             
-            // MỚI: Thêm 2 cột cho Google Authenticator 2FA
+            
             $table->string('two_factor_secret')->nullable(); 
             $table->boolean('two_factor_enabled')->default(false);
 
@@ -51,9 +49,7 @@ return new class extends Migration
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
+   
     public function down(): void
     {
         Schema::dropIfExists('users');
