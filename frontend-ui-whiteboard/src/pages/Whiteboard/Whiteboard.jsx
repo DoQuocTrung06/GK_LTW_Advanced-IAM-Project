@@ -16,6 +16,7 @@ function Whiteboard() {
   const { id } = useParams(); 
   const stageRef = useRef(null);
   const fileInputRef = useRef(null);
+  const ignoredIdsRef = useRef(new Set());
 
 
   const [lines, setLines] = useState([]);
@@ -39,7 +40,7 @@ function Whiteboard() {
 
   
   const { boardData, currentUser, activeUsers, cursors, broadcastCursor } = useBoardSync(
-    id, lines, setLines, setRedoStack, setBgImage
+    id, lines, setLines, setRedoStack, setBgImage, ignoredIdsRef
   );
 
   const { canDraw, canManageBoard } = usePermissions(boardData?.role);
@@ -64,7 +65,7 @@ function Whiteboard() {
   }, [boardData]);
 
   const tools = useBoardTools({
-    lines, setLines, redoStack, setRedoStack, bgImage, setBgImage, boardData, stageRef
+    lines, setLines, redoStack, setRedoStack, bgImage, setBgImage, boardData, stageRef, selectedItemIds, setSelectedItemIds, ignoredIdsRef
   });
 
   const clipboard = useClipboard({
@@ -103,12 +104,14 @@ function Whiteboard() {
         tool={tool} setTool={setTool} color={color} setColor={setColor}
         brushSize={brushSize} setBrushSize={setBrushSize}
         onClearAll={() => {
-          
           if (canDraw) { 
-             setIsClearModalOpen(true);
+            if (selectedItemIds.length > 0) {
+              tools.deleteSelectedItems();
+            } else {
+              setIsClearModalOpen(true);
+            }
           } else {
-             
-             toast.error("Only owners and editors can clear the board!"); 
+            toast.error("Only owners and editors can clear the board!"); 
           }
         }}
       />

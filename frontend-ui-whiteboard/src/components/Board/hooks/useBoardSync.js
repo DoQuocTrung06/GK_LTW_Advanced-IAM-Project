@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import echo from '../../../echo'; 
 
-export const useBoardSync = (id, lines, setLines, setRedoStack, setBgImage) => {
+export const useBoardSync = (id, lines, setLines, setRedoStack, setBgImage, ignoredIdsRef) => {
   const navigate = useNavigate();
   const [boardData, setBoardData] = useState({ id: 'temp', board_code: 'guest', visibility: 'public' });
   const [currentUser, setCurrentUser] = useState(null);
@@ -117,6 +117,12 @@ export const useBoardSync = (id, lines, setLines, setRedoStack, setBgImage) => {
         const incomingData = e.actionData; 
         if (!incomingData) return;
 
+        if (ignoredIdsRef && ignoredIdsRef.current && incomingData.id) {
+          if (ignoredIdsRef.current.has(incomingData.id)) {
+             return; 
+          }
+        }
+
         if (incomingData.tool === 'clear') {
           setLines([]); setRedoStack([]); setBgImage(null); return; 
         }
@@ -169,7 +175,7 @@ export const useBoardSync = (id, lines, setLines, setRedoStack, setBgImage) => {
     };
   }, [currentUser, boardData, setLines, setRedoStack, setBgImage]);
 
-  // 4. Auto Save Loop
+  
   useEffect(() => {
     if (!boardData?.id || boardData.id === 'temp') return;
     const autoSaveTimer = setTimeout(() => {

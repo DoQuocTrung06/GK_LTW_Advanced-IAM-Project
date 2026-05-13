@@ -2,7 +2,7 @@ import { useState } from 'react';
 import echo from '../../../echo';
 
 export const useBoardTools = ({
-  lines, setLines, redoStack, setRedoStack, bgImage, setBgImage, boardData, stageRef
+  lines, setLines, redoStack, setRedoStack, bgImage, setBgImage, boardData, stageRef, selectedItemIds, setSelectedItemIds, ignoredIdsRef
 }) => {
   const [zoomLevel, setZoomLevel] = useState(1);
   const [lastSavedData, setLastSavedData] = useState({ lines: [], bgImage: null });
@@ -29,10 +29,51 @@ export const useBoardTools = ({
     }
   };
 
+  const immediateSave = (newLines) => {
+    if (!boardData || !boardData.id || boardData.id === 'temp') return;
+    const token = localStorage.getItem('auth_token');
+    if (!token) return;
+
+    fetch(`${import.meta.env.VITE_API_URL}/boards/${boardData.id}/save-data`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({ board_data: newLines })
+    }).catch(err => console.error("Lỗi lưu khẩn cấp:", err));
+  };
+
   const executeClearBoard = () => {
-    setLines([]); setRedoStack([]); setBgImage(null);
+    
+    if (ignoredIdsRef) {
+      lines.forEach(line => ignoredIdsRef.current.add(line.id));
+    }
+    
+    setLines([]); 
+    setRedoStack([]); 
+    setBgImage(null);
     setLastSavedData({ lines: [], bgImage: null });
     broadcastAction({ tool: 'clear', id: Date.now() });
+
+    immediateSave([]);
+  };
+
+  const deleteSelectedItems = () => {
+    if (!selectedItemIds || selectedItemIds.length === 0) return;
+    
+    
+    if (ignoredIdsRef) {
+      selectedItemIds.forEach(id => ignoredIdsRef.current.add(id));
+    }
+
+    const newLines = lines.filter(line => !selectedItemIds.includes(line.id));
+    
+    setLines(prev => prev.filter(line => !selectedItemIds.includes(line.id)));
+    setSelectedItemIds([]);
+    broadcastAction({ tool: 'delete_multiple', targetIds: selectedItemIds });
+    immediateSave(newLines);
   };
 
   const handleUndo = () => {
@@ -107,7 +148,7 @@ export const useBoardTools = ({
 
   return {
     zoomLevel, hasUnsavedChanges,
-    executeClearBoard, handleUndo, handleRedo,
+    executeClearBoard, deleteSelectedItems , handleUndo, handleRedo,
     handleZoomIn, handleZoomOut, handleResetZoom, handleSave, handleFileChange
   };
 };
