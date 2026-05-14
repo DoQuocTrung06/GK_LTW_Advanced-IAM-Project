@@ -98,11 +98,13 @@ function Whiteboard() {
           if (canManageBoard) setIsShareModalOpen(true);
           else toast.error("Only the owner can share this board!");
         }}
+        canDraw={canDraw}
       />
 
       <Toolbar 
         tool={tool} setTool={setTool} color={color} setColor={setColor}
         brushSize={brushSize} setBrushSize={setBrushSize}
+        canDraw={canDraw}
         onClearAll={() => {
           if (canDraw) { 
             if (selectedItemIds.length > 0) {

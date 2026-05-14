@@ -7,7 +7,7 @@ import { getUserColor } from '../Board/utils/userColors';
 function MenuStrip({ 
   onSave, onUndo, onRedo, canUndo, canRedo, onNew, onZoomIn, 
   onZoomOut, onOpen, onResetZoom, onShare, onCut, 
-  hasUnsavedChanges, canPaste, onCopy, onPaste, activeUsers = [], currentUser, boardCreatorId  
+  hasUnsavedChanges, canPaste, onCopy, onPaste, activeUsers = [], currentUser, boardCreatorId, canDraw  
 }) {
   const [activeMenu, setActiveMenu] = useState(null);
   const menuRef = useRef(null);
@@ -149,18 +149,26 @@ function MenuStrip({
             </div>
             {activeMenu === 'edit' && (
               <div className="dropdown-content">
-                <button onClick={() => handleAction('cut')}>Cut</button>
-                <button onClick={() => handleAction('copy')}>Copy</button>
+                <button 
+                  onClick={() => handleAction('cut')} 
+                  disabled={!canDraw}
+                  style={{ opacity: canDraw ? 1 : 0.4, cursor: canDraw ? 'pointer' : 'not-allowed' }}
+                >Cut</button>
+                
+                <button 
+                  onClick={() => handleAction('copy')} 
+                  disabled={!canDraw}
+                  style={{ opacity: canDraw ? 1 : 0.4, cursor: canDraw ? 'pointer' : 'not-allowed' }}
+                >Copy</button>
+                
                 <button 
                   onClick={() => handleAction('paste')} 
-                  disabled={!canPaste}
+                  disabled={!canPaste || !canDraw} 
                   style={{ 
-                    opacity: canPaste ? 1 : 0.4, 
-                    cursor: canPaste ? 'pointer' : 'not-allowed' 
+                    opacity: (canPaste && canDraw) ? 1 : 0.4, 
+                    cursor: (canPaste && canDraw) ? 'pointer' : 'not-allowed' 
                   }}
-                >
-                  Paste
-                </button>
+                >Paste</button>
               </div>
             )}
           </div>
@@ -202,7 +210,8 @@ function MenuStrip({
             
             <button 
               onClick={() => handleProtectedAction('Undo', onUndo)} 
-              disabled={!canUndo && currentUser} 
+              disabled={(!canUndo && currentUser) || !canDraw} 
+              style={{ opacity: !canDraw ? 0.4 : 1, cursor: !canDraw ? 'not-allowed' : 'pointer' }}
               className="quick-btn" 
               title="Undo"
             >
@@ -212,7 +221,8 @@ function MenuStrip({
             
             <button 
               onClick={() => handleProtectedAction('Redo', onRedo)} 
-              disabled={!canRedo && currentUser} 
+              disabled={(!canRedo && currentUser) || !canDraw} 
+              style={{ opacity: !canDraw ? 0.4 : 1, cursor: !canDraw ? 'not-allowed' : 'pointer' }}
               className="quick-btn" 
               title="Redo"
             >

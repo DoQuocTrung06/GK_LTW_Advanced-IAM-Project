@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import './Toolbar.css';
 
 
-function Toolbar({ tool, setTool, color, setColor, brushSize, setBrushSize, onClearAll }) {
+function Toolbar({ tool, setTool, color, setColor, brushSize, setBrushSize, onClearAll, canDraw }) {
   const [showBrushMenu, setShowBrushMenu] = useState(false);
   const row1Colors = ['#000000', '#7f7f7f', '#880015', '#ed1c24', '#ff7f27', '#fff200', '#22b14c', '#00a2e8', '#3f48cc', '#a349a4'];
   const row2Colors = ['#ffffff', '#c3c3c3', '#b97a57', '#ffaec9', '#ffc90e', '#efe4b0', '#b5e61d', '#99d9ea', '#7092be', '#c8bfe7'];
@@ -29,7 +29,7 @@ function Toolbar({ tool, setTool, color, setColor, brushSize, setBrushSize, onCl
   ];
 
   return (
-    <div className="ribbon-container">
+    <div className="ribbon-container" style={{ opacity: canDraw ? 1 : 0.5, pointerEvents: canDraw ? 'auto' : 'none' }}>
       
       
       <div className="ribbon-section">

@@ -79,6 +79,9 @@ services:
       - "5173:5173"
     env_file:
       - ./frontend-ui-whiteboard/.env
+    volumes:
+      - ./frontend-ui-whiteboard:/app
+      - /app/node_modules
     depends_on:
       - backend
       - reverb
