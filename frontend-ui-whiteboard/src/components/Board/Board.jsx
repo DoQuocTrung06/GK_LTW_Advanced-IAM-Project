@@ -501,7 +501,18 @@ function Board({
             )}
 
             {dragOverlay && tool === 'select' && (
-              <Rect id="drag-overlay" x={dragOverlay.x} y={dragOverlay.y} width={dragOverlay.width} height={dragOverlay.height} fill="transparent" draggable onDragStart={handleGroupDragStart} onDragMove={handleGroupDragMove} onDragEnd={handleGroupDragEnd} />
+              <Rect
+                id="drag-overlay"
+                x={dragOverlay.x}
+                y={dragOverlay.y}
+                width={dragOverlay.width}
+                height={dragOverlay.height}
+                fill="rgba(0,0,0,0)"  
+                draggable
+                onDragStart={handleGroupDragStart}
+                onDragMove={handleGroupDragMove}
+                onDragEnd={handleGroupDragEnd}
+              />
             )}
 
             <Transformer 

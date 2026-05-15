@@ -8,7 +8,6 @@ export const useFloodFill = (stageRef, setLines, clearRedo, lines, linesRef) => 
     if (!stageRef.current) return;
 
     const stage = stageRef.current;
-
     const layer = stage.findOne('Layer');
     if (!layer || layer.getChildren().length === 0) return;
 
@@ -40,33 +39,39 @@ export const useFloodFill = (stageRef, setLines, clearRedo, lines, linesRef) => 
 
     if (startR === fillRGB.r && startG === fillRGB.g && startB === fillRGB.b && startA === 255) return;
 
+    const visited = new Uint8Array(width * height);
     const pixelStack = [[x, y]];
 
     while (pixelStack.length > 0) {
       const [nx, ny] = pixelStack.pop();
-      const currentPixelPos = (ny * width + nx) * 4;
+      const idx = ny * width + nx;
 
+      if (visited[idx]) continue;
+      visited[idx] = 1;
+
+      const currentPixelPos = idx * 4;
       const cr = data[currentPixelPos];
       const cg = data[currentPixelPos + 1];
       const cb = data[currentPixelPos + 2];
       const ca = data[currentPixelPos + 3];
 
-      if (matchColor(cr, cg, cb, ca, startR, startG, startB, startA, 30)) {
-        data[currentPixelPos] = fillRGB.r;
-        data[currentPixelPos + 1] = fillRGB.g;
-        data[currentPixelPos + 2] = fillRGB.b;
-        data[currentPixelPos + 3] = 255;
+      
+      if (!matchColor(cr, cg, cb, ca, startR, startG, startB, startA, 10)) continue;
 
-        outputData[currentPixelPos] = fillRGB.r;
-        outputData[currentPixelPos + 1] = fillRGB.g;
-        outputData[currentPixelPos + 2] = fillRGB.b;
-        outputData[currentPixelPos + 3] = 255;
+      data[currentPixelPos] = fillRGB.r;
+      data[currentPixelPos + 1] = fillRGB.g;
+      data[currentPixelPos + 2] = fillRGB.b;
+      data[currentPixelPos + 3] = 255;
 
-        if (nx > 0) pixelStack.push([nx - 1, ny]);
-        if (nx < width - 1) pixelStack.push([nx + 1, ny]);
-        if (ny > 0) pixelStack.push([nx, ny - 1]);
-        if (ny < height - 1) pixelStack.push([nx, ny + 1]);
-      }
+      outputData[currentPixelPos] = fillRGB.r;
+      outputData[currentPixelPos + 1] = fillRGB.g;
+      outputData[currentPixelPos + 2] = fillRGB.b;
+      outputData[currentPixelPos + 3] = 255;
+
+      if (nx > 0) pixelStack.push([nx - 1, ny]);
+      if (nx < width - 1) pixelStack.push([nx + 1, ny]);
+      if (ny > 0) pixelStack.push([nx, ny - 1]);
+      if (ny < height - 1) pixelStack.push([nx, ny + 1]);
     }
 
     const tempCanvas = document.createElement('canvas');
@@ -89,7 +94,6 @@ export const useFloodFill = (stageRef, setLines, clearRedo, lines, linesRef) => 
     };
   };
 
-  // Quét ảnh tự động
   useEffect(() => {
     const missingFillLines = lines.filter(
       (line) =>
@@ -105,11 +109,10 @@ export const useFloodFill = (stageRef, setLines, clearRedo, lines, linesRef) => 
     if (missingFillLines.length === 0) return;
 
     missingFillLines.forEach((line) => {
-      fillingIdsRef.current.add(line.id); 
+      fillingIdsRef.current.add(line.id);
       requestAnimationFrame(() => {
         const currentLine = linesRef.current.find(l => l.id === line.id);
         if (currentLine?.imageObj) return;
-
         performFloodFill(line.startX, line.startY, line.color, line.id);
       });
     });
